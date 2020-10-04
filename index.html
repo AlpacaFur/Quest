@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>CAC App</title>
+    <link rel="preload" href="/assets/fonts/sourcesans-regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/sourcesans-bold.woff2" as="font" type="font/woff2" crossorigin>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="/index.css">
+    <script src="index.js" defer></script>
+    <!-- <meta name="color-scheme" content="light dark"> -->
+  </head>
+  <body>
+    <div class="modal-background hidden" id="modal-background">
+      <div class="modal" id="modal">
+      	<div class="complete">
+      		<p>Complete Quest</p>
+  		    <svg viewBox="0 0 41.76 41.76"><path d="M20.88 0a20.88 20.88 0 100 41.76 20.88 20.88 0 000-41.76zm-1.44 30.61l-2.65 2.65-2.65-2.65-8-8 2.65-2.65 8 8 16.19-16.19 2.65 2.65-16.19 16.19z"/></svg>
+      	</div>
+      	<div class="info">
+      		<p>More Info...</p>
+      		<svg viewBox="0 0 42 42"><path d="M22.27 14.7h-2.54a.83.83 0 01-.83-.83v-2.54c0-.46.37-.83.83-.83h2.54c.46 0 .83.37.83.83v2.54c0 .46-.37.83-.83.83zm.08 16.8h-2.69a.75.75 0 01-.75-.75v-11.1c0-.42.34-.75.75-.75h2.69c.42 0 .75.34.75.75v11.09c0 .42-.34.76-.75.76zM21 0a21 21 0 100 42 21 21 0 000-42z"/></svg>
+      	</div>
+      	<div class="danger">
+      		<p>Remove This Quest</p>
+      		<svg viewBox="0 0 36 36"><path d="M36 3.63L32.37 0 18 14.37 3.63 0 0 3.63 14.37 18 0 32.37 3.63 36 18 21.63 32.37 36 36 32.37 21.63 18 36 3.63z"/></svg>
+      	</div>
+      	<div class="close">
+      		<p>Close</p>
+      	</div>
+      </div>
+    </div>
+    <h1 class="daily-title">Daily Quests</h1>
+    <!-- <h1>Persistance test!</h1>
+    <p>Persisted data: <span id="persist-data">None!</span></p>
+    <label for="persist-box">Enter data to persist:</label>
+    <input type="text" id="persist-box" value="">
+    <button id="persist">Persist!</button>
+    <button id="refresh">Refresh!</button>
+    <p>Hello world</p> -->
+    <div id="daily-quests">
+
+    </div>
+    <div class="add-quest hidden" id="add-quest">
+    	<svg xmlns="http://www.w3.org/2000/svg" overflow="visible" viewBox="0 0 55 55"><path d="M27 55a5 5 0 01-5-5V5a5 5 0 0110 0v45a5 5 0 01-5 5z" class="st0"/><path d="M0 28a5 5 0 015-5h45a5 5 0 010 10H5a5 5 0 01-5-5z" class="st0"/></svg>
+    	<p>Add Quest</p>
+    </div>
+    <div id="bonus-quests">
+
+    </div>
+    <button id="refresh">Refresh!</button>
+    <button id="reset">RESET!</button>
+    <script> </script>
+  </body>
+</html>

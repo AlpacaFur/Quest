@@ -1,0 +1,269 @@
+---
+---
+@font-face {
+  font-family: "Source Sans";
+  src: url("/assets/fonts/sourcesans-regular.woff2") format("woff2");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "Source Sans";
+  src: url("/assets/fonts/sourcesans-bold.woff2") format("woff2");
+  font-weight: bold;
+}
+
+body {
+  // height: 100%;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+  width: 100vw;
+  margin: 0px;
+  box-sizing: border-box;
+  padding: 10px;
+  overflow: hidden;
+  position: fixed;
+  font-family: "Source Sans", sans-serif;
+  // font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  // -webkit-overflow-scrolling: touch;
+}
+// @media (prefers-color-scheme: dark) {
+//   body {
+    // background-color: black;
+    // color: white;
+//   }
+// }
+
+.modal-background {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  background-color: #00000077;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+  &.hidden {
+    pointer-events: none;
+    opacity: 0;
+
+  }
+}
+
+.modal {
+	border-radius: 12px;
+	overflow: hidden;
+	background-color: #fff;
+	width: 240px;
+	font-size: 20px;
+	>div {
+		padding: 12px 12px;
+		border-bottom: 2px solid #888;
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+		&:hover, &:active {
+			background-color: #00000022;
+		}
+		p {
+			margin: 0;
+			flex: 1;
+			color: #4d4d4d;
+		}
+		svg {
+			fill: #4d4d4d;
+			height: 23px;
+			width: 23px;
+			// justify-self: right;
+			// flex: 1;
+		}
+	}
+	.complete {
+		// background: linear-gradient(-45deg, #00805F, #00BF07);
+			background: linear-gradient(-45deg, #00805F, #00BF07, #333, #333);
+		background-size: 320% 320%;
+		transition: background-position 0.25s ease;
+		border: none;
+		&:active {
+			background-position: 100%, 100%;
+		}
+		p {
+			color: white;
+			font-weight: 600;
+		}
+		svg {
+			fill: white;
+		}
+	}
+	.danger {
+		p {
+			color: #d11818;
+		}
+		svg {
+			width: 20px;
+			height: 20px;
+			margin-left: -10px;
+			fill: #c51d1d;
+		}
+	}
+	.close {
+		text-align: center;
+		font-weight: 600;
+		padding: 8px 0px;
+		border: none;
+	}
+}
+
+.daily-title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 35px;
+}
+
+.quest {
+	max-width: 400px;
+	height: 80px;
+	background-color: transparent;
+	border: 3px solid #666;
+	border-radius: 15px;
+	box-sizing: border-box;
+	background: linear-gradient(-45deg, #00805F, #00BF07, #fff, #fff);
+	background-size: 320% 320%;
+	background-position: 5% 5%;
+	transition: background-position 0.5s ease, border-color 0.25s ease;
+	display: flex;
+	font-family: "Source Sans", sans-serif;
+	user-select: none;
+	cursor: pointer;
+  margin-top: 10px;
+	.check-box {
+		display: flex;
+		flex-direction: column;
+		position: relative;
+		height: 100%;
+		width: 55px;
+		svg {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			transition: opacity 0.5s ease;
+		}
+		svg:first-child {
+			fill: white;
+			width: 27px;
+			height: 27px;
+			opacity: 0;
+		}
+		svg:last-child {
+			width: 27px;
+			height: 27px;
+			fill: transparent;
+			stroke: #666;
+			opacity: 1;
+		}
+	}
+	.text {
+		flex: 1;
+		p {
+			color: #666;
+			transition: color 0.5s ease;
+		}
+		p:first-child {
+			font-weight: bold;
+			margin-top: 8px;
+			margin-bottom: 0px;
+			font-weight: 10px;
+			font-size: 22px;
+		}
+		p:last-child {
+			margin-top: 0px;
+      font-size: 17px;
+		}
+	}
+	.points {
+		margin: -2px 12px 0px 12px;
+		display: flex;
+		height: 100%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		p {
+			font-weight: bold;
+			font-size: 24px;
+			color: #666;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			transition: color 0.5s ease;
+
+		}
+		svg {
+			width: 20px;
+			height: 20px;
+			fill: #666;
+			transition: fill 0.5s ease;
+		}
+	}
+	&.completed {
+		.check-box {
+			svg:first-child {
+				opacity: 1;
+			}
+			svg:last-child {
+				opacity: 0;
+			}
+		}
+		.text p {
+			color: white;
+		}
+		.points {
+			p {
+				color: white;
+			}
+			svg {
+				fill: white;
+			}
+		}
+		background-position: 95% 95%;
+		border-color: transparent;
+	}
+	&.bonus {
+		border-style: dashed;
+	}
+}
+.add-quest {
+	max-width: 400px;
+	height: 70px;
+  margin-top: 10px;
+	border: 3px solid #666;
+	border-radius: 15px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-family: "Source Sans", sans-serif;
+	box-sizing: border-box;
+	user-select: none;
+	cursor: pointer;
+	svg {
+		width: 25px;
+		height: 25px;
+		margin-top: 7px;
+		fill: #666;
+	}
+	p {
+		margin-top: 3px;
+		font-weight: bold;
+		color: #666;
+		font-size: 20px;
+	}
+}
+.add-quest.hidden {
+  display: none;
+}
