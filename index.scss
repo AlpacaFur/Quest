@@ -139,7 +139,8 @@ body {
 	transition: background-position 0.5s ease, border-color 0.25s ease;
 	display: flex;
 	font-family: "Source Sans", sans-serif;
-	user-select: none;
+  user-select: none;
+	-webkit-user-select: none;
 	cursor: pointer;
   margin-top: 10px;
 	.check-box {
@@ -249,7 +250,8 @@ body {
 	align-items: center;
 	font-family: "Source Sans", sans-serif;
 	box-sizing: border-box;
-	user-select: none;
+  user-select: none;
+	-webkit-user-select: none;
 	cursor: pointer;
 	svg {
 		width: 25px;

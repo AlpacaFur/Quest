@@ -1,12 +1,6 @@
-// "use strict";
-// document.getElementById("persist-data").textContent = localStorage.persistedData !== undefined ? localStorage.persistedData : "None!"
-// document.getElementById("persist").addEventListener("click", ()=>{
-//   let data = document.getElementById("persist-box").value;
-//   localStorage.persistedData = data;
-//   document.getElementById("persist-data").textContent = data;
-// })
+"use strict";
 
-ICONS = {
+const ICONS = {
   "complete": {
     viewBox: "0 0 41.76 41.76",
     paths: ["M20.88 0a20.88 20.88 0 100 41.76 20.88 20.88 0 000-41.76zm-1.44 30.61l-2.65 2.65-2.65-2.65-8-8 2.65-2.65 8 8 16.19-16.19 2.65 2.65-16.19 16.19z"]
@@ -25,63 +19,6 @@ function capitalize(string) {
   return string.slice(0,1).toUpperCase() + string.slice(1);
 }
 
-function handleQuestComplete(questId) {
-
-}
-
-function buildQuest(title, subtitle, points, questId, completed, additionalClass) {
-  let questCont = document.createElement("div")
-  questCont.classList.add("quest")
-  if (additionalClass) questCont.classList.add(additionalClass);
-  if (completed) questCont.classList.add("completed");
-  let checkboxCont = document.createElement("div")
-    checkboxCont.classList.add("check-box")
-    checkboxCont.innerHTML = `<svg viewBox="0 0 51 51"><path d="M25.5 0a25.5 25.5 0 100 51 25.5 25.5 0 000-51zm-1.77 37.38l-3.24 3.24-3.24-3.24-9.75-9.76 3.24-3.24 9.76 9.76 19.76-19.76 3.24 3.24-19.77 19.76z"/></svg><svg viewBox="0 0 55 55"><circle cx="27.5" cy="27.5" r="25.5" stroke-miterlimit="10" stroke-width="5"/></svg>`
-    questCont.appendChild(checkboxCont)
-
-    checkboxCont.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      questCont.classList.toggle("completed")
-      handleQuestComplete(questId)
-    }, true)
-
-  let textCont = document.createElement("div")
-    textCont.classList.add("text")
-    let titleElem = document.createElement("p")
-    titleElem.textContent = title;
-    textCont.appendChild(titleElem);
-    let subtitleElem = document.createElement("p")
-    subtitleElem.textContent = subtitle;
-    textCont.appendChild(subtitleElem)
-    questCont.appendChild(textCont)
-  let pointsCont = document.createElement("div")
-    pointsCont.classList.add("points")
-    pointsCont.innerHTML = `<p>${points}</p><svg viewBox="0 0 32 32"><path d="M16 0l-4.36 11.64L0 16l11.64 4.36L16 32l4.36-11.64L32 16l-11.64-4.36L16 0z"/></svg>`
-    questCont.appendChild(pointsCont)
-  questCont.addEventListener("click", ()=>{
-    showQuestModal(questId)
-  })
-
-  return questCont;
-}
-
-function showQuestModal(questId) {
-  setModal([
-    {id:"complete", text:"Complete Quest!", class:"complete", icon: "complete"},
-    {id:"info", text:"More Info...", icon: "info"},
-    {id:"hide", text:"Hide this Quest", icon: "remove", class:"danger"}
-  ])
-  .then((event)=>{
-    switch(event) {
-      case "complete":
-        questLogic.completeQuest(questId)
-        break;
-      default:
-        throw new Error("Undefined event:", event);
-    }
-  })
-}
-
 document.getElementById("refresh").addEventListener("click", ()=>{
   window.location.reload();
 })
@@ -93,7 +30,7 @@ document.getElementById("reset").addEventListener("click", ()=>{
 //   showQuests();
 // })
 
-document.addEventListener("touchstart", function(){}, true);
+// document.addEventListener("touchstart", function(){}, true);
 
 // document.getElementById("box").addEventListener("click", ()=>{
 // 	document.getElementById("quest").classList.toggle("completed")
@@ -110,36 +47,8 @@ function createSVG(viewBox, paths) {
   return svg;
 }
 
-function setModal(choices) {
-  return new Promise((resolve, reject)=>{
-    let modal = document.getElementById("modal")
-    while (modal.firstChild) {
-      modal.removeChild(modal.lastChild);
-    }
-    let frag = document.createDocumentFragment();
-    choices.forEach((choice)=>{
-      let div = document.createElement("div");
-      if (choice.class) div.classList.add(choice.class);
-      let text = document.createElement("p");
-      text.textContent = choice.text;
-      div.appendChild(text);
-      let svg = createSVG(ICONS[choice.icon].viewBox, ICONS[choice.icon].paths);
-      div.appendChild(svg);
-      frag.appendChild(div);
-    })
-    let close = document.createElement("div");
-    close.classList.add("close");
-    let closep = document.createElement("p")
-    closep.textContent = "Close";
-    close.appendChild(closep)
-    close.addEventListener("click", ()=>{
-      document.getElementById("modal-background").classList.add("hidden");
-      resolve("close")
-    })
-    modal.appendChild(frag);
-    modal.appendChild(close)
-    document.getElementById("modal-background").classList.remove("hidden");
-  })
+function closeModal() {
+  document.getElementById("modal-background").classList.add("hidden");
 }
 
 const quests = {
@@ -278,6 +187,138 @@ class QuestPool {
   }
 }
 
+class QuestDisplay {
+  constructor(mainQuestElemId, bonusQuestElemId, logic) {
+    this.dailyQuestElems = [];
+    this.dailyQuestIds = [];
+    this.logic = logic;
+
+    this.dailyQuestParent = document.getElementById(mainQuestElemId)
+    this.bonusQuestParent = document.getElementById(bonusQuestElemId)
+
+    this.bonusQuests = [];
+  }
+  setModal(choices) {
+    return new Promise((resolve, reject)=>{
+      let modal = document.getElementById("modal")
+      while (modal.firstChild) {
+        modal.removeChild(modal.lastChild);
+      }
+      let frag = document.createDocumentFragment();
+      choices.forEach((choice)=>{
+        let div = document.createElement("div");
+        if (choice.class) div.classList.add(choice.class);
+        let text = document.createElement("p");
+        text.textContent = choice.text;
+        div.appendChild(text);
+        let svg = createSVG(ICONS[choice.icon].viewBox, ICONS[choice.icon].paths);
+        div.appendChild(svg);
+        div.addEventListener("click", ()=>{
+          resolve(choice.id)
+        })
+        frag.appendChild(div);
+      })
+      let close = document.createElement("div");
+      close.classList.add("close");
+      let closep = document.createElement("p")
+      closep.textContent = "Close";
+      close.appendChild(closep)
+      close.addEventListener("click", ()=>{
+        document.getElementById("modal-background").classList.add("hidden");
+        resolve("close")
+      })
+      modal.appendChild(frag);
+      modal.appendChild(close)
+      document.getElementById("modal-background").classList.remove("hidden");
+    })
+  }
+  showQuestModal(questId) {
+    let completePhrase = this.logic.getQuest(questId).completed ? "Uncomplete Quest" : "Complete Quest!"
+    this.setModal([
+      {id:"complete", text:completePhrase, class:"complete", icon: "complete"},
+      {id:"info", text:"More Info...", icon: "info"},
+      {id:"hide", text:"Hide this Quest", icon: "remove", class:"danger"}
+    ])
+    .then((event)=>{
+      switch(event) {
+        case "complete":
+          questLogic.toggleComplete(questId)
+          closeModal()
+          break;
+        default:
+          // throw new Error("Undefined event:", event);
+      }
+    })
+  }
+  removeElement(element) {
+    element.parentElement.removeChild(element);
+  }
+  removeQuest(questId) {
+    let index = this.getQuestIndex()
+    this.removeElement(this.getQuestElem(questId))
+    this.dailyQuestElems.splice(index, 1)
+    this.dailyQuestIds.splice(index, 1)
+  }
+  addQuest(quest, bonus) {
+    if (!bonus) {
+      let questElem = this.buildQuest(quest.title, quest.categories[0], quest.points, quest.id, quest.completed)
+      this.dailyQuestParent.appendChild(questElem);
+      this.dailyQuestElems.push(questElem)
+      this.dailyQuestIds.push(quest.id)
+    }
+  }
+  buildQuest(title, subtitle, points, questId, completed, additionalClass) {
+    let questCont = document.createElement("div")
+    questCont.classList.add("quest")
+    if (additionalClass) questCont.classList.add(additionalClass);
+    if (completed) questCont.classList.add("completed");
+    let checkboxCont = document.createElement("div")
+      checkboxCont.classList.add("check-box")
+      checkboxCont.innerHTML = `<svg viewBox="0 0 51 51"><path d="M25.5 0a25.5 25.5 0 100 51 25.5 25.5 0 000-51zm-1.77 37.38l-3.24 3.24-3.24-3.24-9.75-9.76 3.24-3.24 9.76 9.76 19.76-19.76 3.24 3.24-19.77 19.76z"/></svg><svg viewBox="0 0 55 55"><circle cx="27.5" cy="27.5" r="25.5" stroke-miterlimit="10" stroke-width="5"/></svg>`
+      questCont.appendChild(checkboxCont)
+
+      checkboxCont.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        questLogic.toggleComplete(questId)
+      }, true)
+
+    let textCont = document.createElement("div")
+      textCont.classList.add("text")
+      let titleElem = document.createElement("p")
+      titleElem.textContent = title;
+      textCont.appendChild(titleElem);
+      let subtitleElem = document.createElement("p")
+      subtitleElem.textContent = subtitle;
+      textCont.appendChild(subtitleElem)
+      questCont.appendChild(textCont)
+    let pointsCont = document.createElement("div")
+      pointsCont.classList.add("points")
+      pointsCont.innerHTML = `<p>${points}</p><svg viewBox="0 0 32 32"><path d="M16 0l-4.36 11.64L0 16l11.64 4.36L16 32l4.36-11.64L32 16l-11.64-4.36L16 0z"/></svg>`
+      questCont.appendChild(pointsCont)
+    questCont.addEventListener("click", ()=>{
+      this.showQuestModal(questId)
+    })
+
+    return questCont;
+  }
+  getQuestIndex(questId, bonus) {
+    if (!bonus) {
+      return this.dailyQuestIds.findIndex(id=>id===questId)
+    }
+  }
+  getQuestElem(questId, bonus) {
+    if (!bonus) {
+      return this.dailyQuestElems[this.getQuestIndex(questId, bonus)]
+    }
+  }
+  complete(questId, bonus) {
+    this.getQuestElem(questId, bonus).classList.add("completed")
+  }
+  uncomplete(questId, bonus) {
+    this.getQuestElem(questId, bonus).classList.remove("completed")
+  }
+}
+
 class QuestLogic {
   constructor() {
     this.dailyQuests = [];
@@ -287,6 +328,7 @@ class QuestLogic {
     this.excludedCategories = [];
     this.disabledForToday = [];
     this.questPool = null;
+    this.questDisplay = null;
     this.settings = {
       numberOfQuests: 3
     }
@@ -296,30 +338,31 @@ class QuestLogic {
     let now = new Date();
     return `${String(now.getUTCFullYear()).slice(-2)}${String(now.getUTCMonth()+1).padStart(2, 0)}${String(now.getUTCDate()).padStart(2, 0)}`;
   }
-  addQuest(quest, isBonus) {
-    let capitalizedCategory = quest.categories[0].slice(0,1).toUpperCase() + quest.categories[0].slice(1);
-    if (!isBonus) {
-      let questElem = buildQuest(quest.title, capitalizedCategory, quest.points, quest.id, quest.completed)
-      document.getElementById("daily-quests").appendChild(questElem)
+  getQuestIndex(questId, bonus) {
+    return this.dailyQuests.findIndex(quest=>quest.id===questId)
+  }
+  getQuest(questId, bonus) {
+    return this.dailyQuests.find(quest=>quest.id===questId)
+  }
+  toggleComplete(questId, bonus) {
+    let index = this.getQuestIndex(questId);
+    if (this.dailyQuests[index].completed) {
 
+      this.questDisplay.uncomplete(questId);
+      this.dailyQuests[index].completed = false
     }
     else {
-      let questElem = buildQuest(quest.title, capitalizedCategory, quest.points, quest.id, quest.completed, "bonus")
-      document.getElementById("bonus-quests").appendChild(questElem)
+      this.questDisplay.complete(questId);
+      this.dailyQuests[index].completed = true
     }
-  }
-  getQuest(questId) {
-    let questIndex = this.dailyQuests.findIndex(quest=>quest===questId)
-  }
-  completeQuest(questId) {
-
+    this.serializeData(["dailyQuests"])
   }
   continueDay() {
     this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories"])
     this.disabledForToday = this.excludedQuests.concat(this.dailyQuests)
     this.questPool = new QuestPool(quests);
     this.questPool.buildWeightTable(this.disabledForToday, this.excludedCategories, {base: 10})
-    this.dailyQuests.forEach(quest=>this.addQuest(quest))
+    this.dailyQuests.forEach(quest=>this.questDisplay.addQuest(quest))
   }
   newDay(skipData) {
     this.deserializeData(["excludedQuests", "excludedCategories"])
@@ -332,7 +375,7 @@ class QuestLogic {
       let quest = this.questPool.pull()
       if (quest) {
         this.dailyQuests.push({completed: false, ...quest})
-        this.addQuest(quest, false);
+        this.questDisplay.addQuest(quest, false);
       }
       else {
         // Quests ran out!
@@ -341,6 +384,7 @@ class QuestLogic {
     this.serializeData(["dailyQuests"])
   }
   afterPageLoad() {
+    this.questDisplay = new QuestDisplay("daily-quests", "bonus-quests", this)
     if (localStorage.dataPresent) {
       console.log("DATA PRESENT")
       console.log(this.getCurrentDate)
@@ -376,4 +420,5 @@ class QuestLogic {
   }
 }
 
+// var questDisplay = new QuestDisplay("daily-quests", "bonus-quests");
 var questLogic = new QuestLogic();
