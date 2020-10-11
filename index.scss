@@ -14,8 +14,10 @@
 body {
   // height: 100%;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
-
+  display: flex;
+  flex-direction: column;
   width: 100vw;
+  height: 100vh;
   margin: 0px;
   box-sizing: border-box;
   padding: 10px;
@@ -31,6 +33,98 @@ body {
     // color: white;
 //   }
 // }
+
+.main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow-x: hidden;
+  // scroll-snap-type: x mandatory;
+  overflow-y: hidden;
+  // &.loaded {
+  //   scroll-behavior: smooth;
+  // }
+  >div {
+    // scroll-snap-align: start;
+    height: 100%;
+    width: calc(100vw - 20px);
+    >div {
+      width: calc(100vw - 20px);
+      height: 100%;
+    }
+  }
+}
+
+#questPane, #pointsPane, #settingsPane {
+  >div {
+
+  }
+}
+
+#questsPane {
+  position: relative;
+  #pointsMainContainer {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 21px;
+    right: 10px;
+    transition: transform 0.25s ease;
+    svg {
+      width: 26px;
+      height: 26px;
+      margin-right: 5px;
+    }
+    p {
+      margin: 0px;
+      font-size: 25px;
+      font-weight: bold;
+    }
+    &.adding {
+      transform: scale(1.2) translate(-2px, -1px);
+      color: #00BF07;
+      svg {
+        fill: #00BF07;
+      }
+    }
+    &.subtracting {
+      transform: scale(1.2) translate(-2px, -1px);
+      color: #dc1c1c;
+      svg {
+        fill: #dc1c1c;
+      }
+    }
+  }
+}
+
+
+
+.navigation-buttons {
+  display: flex;
+  height: 70px;
+  align-items: center;
+  justify-content: center;
+  // box-shadow: 0px 0px 10px -3px #000;
+  border-top: 1px solid #bbb;
+  margin: 0 -10px -10px -10px;
+  div {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    &.active>svg {
+      fill: #4d4d4d;
+    }
+  }
+  svg {
+    width: 38px;
+    height: 40px;
+    stroke: #4d4d4d;
+    fill: none;
+  }
+
+}
 
 .modal-background {
   position: absolute;
@@ -66,8 +160,8 @@ body {
 		display: flex;
 		align-items: center;
 		cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
+    // user-select: none;
+    // -webkit-user-select: none;
 		&:hover, &:active {
 			background-color: #00000022;
 		}
@@ -121,7 +215,7 @@ body {
 }
 
 .daily-title {
-    margin-top: 10px;
+    margin-top: 15px;
     margin-bottom: 10px;
     font-size: 35px;
 }

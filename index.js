@@ -12,6 +12,10 @@ const ICONS = {
   "remove": {
     viewBox: "0 0 36 36",
     paths: ["M36 3.63L32.37 0 18 14.37 3.63 0 0 3.63 14.37 18 0 32.37 3.63 36 18 21.63 32.37 36 36 32.37 21.63 18 36 3.63z"]
+  },
+  "points": {
+    viewBox: "0 0 32 32",
+    paths: ["M16 0l-4.36 11.64L0 16l11.64 4.36L16 32l4.36-11.64L32 16l-11.64-4.36L16 0z"]
   }
 }
 
@@ -142,6 +146,38 @@ const quests = {
   },
 }
 
+const demoBirthdays = {
+  "10/10": "Test Person",
+  "10/11": "Another Person"
+}
+
+const bonusEvents = {
+  "11/3": {
+    id: "vote",
+    title: "Vote!",
+    summary: "Vote in this year's election!",
+    points: 50,
+    resources: {
+      title: "Vote.gov",
+      simple_url: "vote.gov",
+      url: "https://vote.gov"
+    },
+    categories: ["Politics"]
+  },
+  "10/10": {
+    id: "register-to-vote",
+    title: "Register to Vote!",
+    summary: "Make sure you're registered to vote in this year's election! Request a mail-in ballot if you plan to vote by mail.",
+    points: 50,
+    resources: {
+      title: "Vote.gov",
+      simple_url: "vote.gov",
+      url: "https://vote.gov"
+    },
+    categories: ["Politics"]
+  }
+}
+
 // difficulty -> relaxed, normal, challenge
 
 class QuestPool {
@@ -192,11 +228,68 @@ class QuestDisplay {
     this.dailyQuestElems = [];
     this.dailyQuestIds = [];
     this.logic = logic;
+    this.points = 0;
+
+    this.navList = [
+      "pointsNav",
+      "questNav",
+      "settingsNav"
+    ]
+
+    this.navList.forEach((id, index)=>{
+      document.getElementById(id).addEventListener("click", ()=>{
+
+        this.switchPanes(index);
+      })
+    })
+
+
+    this.currentPane = -1;
+
+    this.switchPanes(1);
+    document.getElementsByClassName("main")[0].classList.add("loaded")
 
     this.dailyQuestParent = document.getElementById(mainQuestElemId)
     this.bonusQuestParent = document.getElementById(bonusQuestElemId)
 
     this.bonusQuests = [];
+  }
+  changePoints(newTotal, skipAnimation) {
+    document.getElementById("pointsDedicated").textContent = newTotal;
+    if (skipAnimation) {
+      document.getElementById("pointsMain").textContent = newTotal;
+    }
+    else {
+      this.animateNumber(document.getElementById("pointsMain"), this.points, newTotal)
+    }
+    this.points = newTotal;
+  }
+  animateNumber(element, from, to) {
+    let className = Math.sign(to - from) === 1 ? "adding" : "subtracting";
+    if (this.numberAnimationID) {
+      clearInterval(this.numberAnimationID);
+      let oppositeClassName = Math.sign(to - from) === 1 ? "subtracting" : "adding";
+      document.getElementById("pointsMainContainer").classList.remove(oppositeClassName);
+    }
+
+    document.getElementById("pointsMainContainer").classList.add(className);
+    // document.getElementById("pointsMainContainer").classList.add("adding");
+  	let step = 0;
+    const steps = 17;
+  	let stepIncrement = (to - from)/steps
+  	let currentNumber = from;
+  	this.numberAnimationID = setInterval(()=>{
+  		if (step === steps) {
+  			element.textContent = to;
+  			clearInterval(this.numberAnimationID);
+        document.getElementById("pointsMainContainer").classList.remove(className);
+  		}
+  		else {
+  			currentNumber = currentNumber + stepIncrement
+  			element.textContent = Math.round(currentNumber);
+  			step++;
+  		}
+  	}, 50)
   }
   setModal(choices) {
     return new Promise((resolve, reject)=>{
@@ -231,6 +324,15 @@ class QuestDisplay {
       modal.appendChild(close)
       document.getElementById("modal-background").classList.remove("hidden");
     })
+  }
+  switchPanes(paneIndex) {
+    if (paneIndex === this.currentPane) return;
+    if (this.currentPane !== -1) {
+      document.getElementById(this.navList[this.currentPane]).classList.remove("active");
+    }
+    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex-(20*paneIndex);
+    document.getElementById(this.navList[paneIndex]).classList.add("active");
+    this.currentPane = paneIndex;
   }
   showQuestModal(questId) {
     let completePhrase = this.logic.getQuest(questId).completed ? "Uncomplete Quest" : "Complete Quest!"
@@ -293,7 +395,10 @@ class QuestDisplay {
       questCont.appendChild(textCont)
     let pointsCont = document.createElement("div")
       pointsCont.classList.add("points")
-      pointsCont.innerHTML = `<p>${points}</p><svg viewBox="0 0 32 32"><path d="M16 0l-4.36 11.64L0 16l11.64 4.36L16 32l4.36-11.64L32 16l-11.64-4.36L16 0z"/></svg>`
+      let pointText = document.createElement("p")
+      pointText.textContent = points;
+      pointsCont.appendChild(pointText)
+      pointsCont.appendChild(createSVG(ICONS.points.viewBox, ICONS.points.paths))
       questCont.appendChild(pointsCont)
     questCont.addEventListener("click", ()=>{
       this.showQuestModal(questId)
@@ -329,14 +434,21 @@ class QuestLogic {
     this.disabledForToday = [];
     this.questPool = null;
     this.questDisplay = null;
+    this.points = null;
     this.settings = {
       numberOfQuests: 3
     }
     this.afterPageLoad();
   }
+  changePoints(delta) {
+    let oldPoints = this.points;
+    this.points += delta;
+    this.questDisplay.changePoints(this.points);
+    this.serializeData(["points"])
+  }
   getCurrentDate() {
     let now = new Date();
-    return `${String(now.getUTCFullYear()).slice(-2)}${String(now.getUTCMonth()+1).padStart(2, 0)}${String(now.getUTCDate()).padStart(2, 0)}`;
+    return `${now.getUTCFullYear()}-${String(now.getMonth()+1).padStart(2, 0)}-${String(now.getDate()).padStart(2, 0)}`;
   }
   getQuestIndex(questId, bonus) {
     return this.dailyQuests.findIndex(quest=>quest.id===questId)
@@ -347,25 +459,40 @@ class QuestLogic {
   toggleComplete(questId, bonus) {
     let index = this.getQuestIndex(questId);
     if (this.dailyQuests[index].completed) {
-
+      this.changePoints(-1 * this.dailyQuests[index].points)
       this.questDisplay.uncomplete(questId);
       this.dailyQuests[index].completed = false
     }
     else {
+      this.changePoints(this.dailyQuests[index].points)
       this.questDisplay.complete(questId);
       this.dailyQuests[index].completed = true
     }
     this.serializeData(["dailyQuests"])
   }
   continueDay() {
-    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories"])
+    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points"])
     this.disabledForToday = this.excludedQuests.concat(this.dailyQuests)
     this.questPool = new QuestPool(quests);
     this.questPool.buildWeightTable(this.disabledForToday, this.excludedCategories, {base: 10})
     this.dailyQuests.forEach(quest=>this.questDisplay.addQuest(quest))
   }
+  checkBonusTasks(date) {
+    // if (demoBirthdays[date]) {
+    //   let birthday = demoBirthdays[date];
+    //   bonusQuests.push(birthday);
+    //
+    // }
+    // if (bonusEvents[date]) {
+    //
+    // }
+  }
   newDay(skipData) {
-    this.deserializeData(["excludedQuests", "excludedCategories"])
+    let now = new Date();
+    let date = `${String(now.getMonth()+1).padStart(2, 0)}/${String(now.getDate()).padStart(2, 0)}`;
+    this.checkBonusTasks(date);
+    console.log(date)
+    this.deserializeData(["excludedQuests", "excludedCategories", "points"])
     this.disabledForToday = this.excludedQuests;
     this.lastDate = this.getCurrentDate();
     localStorage.lastDate = this.lastDate
@@ -386,15 +513,14 @@ class QuestLogic {
   afterPageLoad() {
     this.questDisplay = new QuestDisplay("daily-quests", "bonus-quests", this)
     if (localStorage.dataPresent) {
-      console.log("DATA PRESENT")
-      console.log(this.getCurrentDate)
-      console.log(localStorage.lastDate)
+      console.log(this.getCurrentDate() === localStorage.lastDate, this.getCurrentDate())
       if (this.getCurrentDate() === localStorage.lastDate) {
         this.continueDay();
       }
       else {
         this.newDay();
       }
+      this.questDisplay.changePoints(this.points, true)
     }
     else {
       console.log("First Time!")
@@ -403,7 +529,6 @@ class QuestLogic {
   }
   deserializeData(categories) {
     categories.forEach((category)=>{
-      console.log(category)
       this[category] = JSON.parse(localStorage[category]);
     })
   }
@@ -414,7 +539,8 @@ class QuestLogic {
   }
   firstDataGeneration() {
     // The first time the app is launched
-    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories"])
+    this.points = 0;
+    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points"])
     localStorage.dataPresent = true;
     this.newDay(true)
   }
@@ -422,3 +548,5 @@ class QuestLogic {
 
 // var questDisplay = new QuestDisplay("daily-quests", "bonus-quests");
 var questLogic = new QuestLogic();
+// switchPanes(1);
+// document.getElementById("main").scrollLeft=500
