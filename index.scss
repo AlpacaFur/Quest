@@ -55,6 +55,31 @@ body {
   }
 }
 
+#infoPane {
+  position: absolute;
+  bottom: 0px;
+  transform: translateY(105%);
+  // height: 100vh;
+  width: 100vw;
+  transition: transform 0.25s ease;
+  background-color: white;
+  z-index: 1;
+  margin: 0px -10px;
+  box-sizing: border-box;
+  padding: 15px 25px 20px 25px;
+  border-radius: 20px 20px 0px 0px;
+  &.visible {
+    transform: translateX(0vh);
+  }
+  h1 {
+    margin-top: 7px;
+    margin-bottom: 0px;
+  }
+  p {
+    margin: 0px;
+  }
+}
+
 #questPane, #pointsPane, #settingsPane {
   >div {
 
@@ -67,7 +92,7 @@ body {
     display: flex;
     align-items: center;
     position: absolute;
-    top: 21px;
+    top: 13px;
     right: 10px;
     transition: transform 0.25s ease;
     svg {
@@ -133,8 +158,8 @@ body {
   width: 100vw;
   height: 100vh;
   background-color: #00000077;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  // backdrop-filter: blur(4px);
+  // -webkit-backdrop-filter: blur(4px);
   z-index: 1;
   display: flex;
   align-items: center;
@@ -215,9 +240,13 @@ body {
 }
 
 .daily-title {
-    margin-top: 15px;
+    margin-top: 2px;
     margin-bottom: 10px;
     font-size: 35px;
+}
+.bonus-title {
+  font-size: 25px;
+  margin: 14px 0px 0px 0px;
 }
 
 .quest {
@@ -274,7 +303,6 @@ body {
 			font-weight: bold;
 			margin-top: 8px;
 			margin-bottom: 0px;
-			font-weight: 10px;
 			font-size: 22px;
 		}
 		p:last-child {

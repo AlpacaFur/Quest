@@ -123,7 +123,7 @@ const quests = {
   "take-hike": {
     id: "take-hike",
     title: "Go on a Hike",
-    points: 15,
+    points: 25,
     summary: "Go on a hike, whether nearby or farther away!",
     categories: ["physical"],
     hide: [
@@ -143,12 +143,12 @@ const quests = {
         }
       }
     ]
-  },
+  }
 }
 
 const demoBirthdays = {
   "10/10": "Test Person",
-  "10/11": "Another Person"
+  "10/11": "Joe"
 }
 
 const bonusEvents = {
@@ -162,9 +162,9 @@ const bonusEvents = {
       simple_url: "vote.gov",
       url: "https://vote.gov"
     },
-    categories: ["Politics"]
+    categories: ["event"]
   },
-  "10/10": {
+  "10/11": {
     id: "register-to-vote",
     title: "Register to Vote!",
     summary: "Make sure you're registered to vote in this year's election! Request a mail-in ballot if you plan to vote by mail.",
@@ -174,7 +174,7 @@ const bonusEvents = {
       simple_url: "vote.gov",
       url: "https://vote.gov"
     },
-    categories: ["Politics"]
+    categories: ["event"]
   }
 }
 
@@ -227,6 +227,8 @@ class QuestDisplay {
   constructor(mainQuestElemId, bonusQuestElemId, logic) {
     this.dailyQuestElems = [];
     this.dailyQuestIds = [];
+    this.bonusQuestElems = [];
+    this.bonusQuestIds = [];
     this.logic = logic;
     this.points = 0;
 
@@ -291,6 +293,15 @@ class QuestDisplay {
   		}
   	}, 50)
   }
+  switchPanes(paneIndex) {
+    if (paneIndex === this.currentPane) return;
+    if (this.currentPane !== -1) {
+      document.getElementById(this.navList[this.currentPane]).classList.remove("active");
+    }
+    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex-(20*paneIndex);
+    document.getElementById(this.navList[paneIndex]).classList.add("active");
+    this.currentPane = paneIndex;
+  }
   setModal(choices) {
     return new Promise((resolve, reject)=>{
       let modal = document.getElementById("modal")
@@ -325,28 +336,38 @@ class QuestDisplay {
       document.getElementById("modal-background").classList.remove("hidden");
     })
   }
-  switchPanes(paneIndex) {
-    if (paneIndex === this.currentPane) return;
-    if (this.currentPane !== -1) {
-      document.getElementById(this.navList[this.currentPane]).classList.remove("active");
-    }
-    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex-(20*paneIndex);
-    document.getElementById(this.navList[paneIndex]).classList.add("active");
-    this.currentPane = paneIndex;
+  showHideModal(questId, bonus) {
+    let quest = this.logic.getQuest(questId, bonus);
+    this.setModal([
+      {id:"distancing", text: "I'm in Quarantine", class:"danger", icon:"remove"},
+      {id:"other", text: "Other Reason", class:"danger", icon:"remove"},
+    ])
   }
-  showQuestModal(questId) {
-    let completePhrase = this.logic.getQuest(questId).completed ? "Uncomplete Quest" : "Complete Quest!"
+  showQuestModal(questId, bonus) {
+    let quest = this.logic.getQuest(questId, bonus)
+    let completePhrase = quest.completed ? "Uncomplete Quest" : "Complete Quest!"
     this.setModal([
       {id:"complete", text:completePhrase, class:"complete", icon: "complete"},
       {id:"info", text:"More Info...", icon: "info"},
-      {id:"hide", text:"Hide this Quest", icon: "remove", class:"danger"}
+      {id:"hide", text:`Hide Quest`, icon: "remove", class:"danger"}
     ])
     .then((event)=>{
       switch(event) {
         case "complete":
-          questLogic.toggleComplete(questId)
+          questLogic.toggleComplete(questId, bonus)
           closeModal()
           break;
+        case "hide":
+          this.removeQuest(questId, bonus)
+          closeModal()
+          // if (quest.hide) {
+          //   this.showHideModal(questId, bonus)
+          // }
+          // else {
+          //   // this.logic.hideQuest()
+          //   this.removeQuest(questId, bonus)
+          //   closeModal()
+          // }
         default:
           // throw new Error("Undefined event:", event);
       }
@@ -355,11 +376,19 @@ class QuestDisplay {
   removeElement(element) {
     element.parentElement.removeChild(element);
   }
-  removeQuest(questId) {
-    let index = this.getQuestIndex()
-    this.removeElement(this.getQuestElem(questId))
-    this.dailyQuestElems.splice(index, 1)
-    this.dailyQuestIds.splice(index, 1)
+  removeQuest(questId, bonus) {
+    if (!bonus) {
+      let index = this.getQuestIndex(questId)
+      this.removeElement(this.getQuestElem(questId))
+      this.dailyQuestElems.splice(index, 1)
+      this.dailyQuestIds.splice(index, 1)
+    }
+    else {
+      let index = this.getQuestIndex(questId, true)
+      this.removeElement(this.getQuestElem(questId, true))
+      this.bonusQuestElems.splice(index, 1)
+      this.bonusQuestIds.splice(index, 1)
+    }
   }
   addQuest(quest, bonus) {
     if (!bonus) {
@@ -368,11 +397,20 @@ class QuestDisplay {
       this.dailyQuestElems.push(questElem)
       this.dailyQuestIds.push(quest.id)
     }
+    else {
+      let questElem = this.buildQuest(quest.title, quest.categories[0], quest.points, quest.id, quest.completed, true)
+      this.bonusQuestParent.appendChild(questElem)
+      this.bonusQuestElems.push(questElem)
+      this.bonusQuestIds.push(quest.id)
+    }
   }
-  buildQuest(title, subtitle, points, questId, completed, additionalClass) {
+  capitalize(string) {
+    return string.slice(0,1).toUpperCase() + string.slice(1)
+  }
+  buildQuest(title, subtitle, points, questId, completed, bonus) {
     let questCont = document.createElement("div")
     questCont.classList.add("quest")
-    if (additionalClass) questCont.classList.add(additionalClass);
+    if (bonus) questCont.classList.add("bonus");
     if (completed) questCont.classList.add("completed");
     let checkboxCont = document.createElement("div")
       checkboxCont.classList.add("check-box")
@@ -381,7 +419,7 @@ class QuestDisplay {
 
       checkboxCont.addEventListener("click", (e)=>{
         e.stopPropagation();
-        questLogic.toggleComplete(questId)
+        questLogic.toggleComplete(questId, bonus)
       }, true)
 
     let textCont = document.createElement("div")
@@ -390,7 +428,7 @@ class QuestDisplay {
       titleElem.textContent = title;
       textCont.appendChild(titleElem);
       let subtitleElem = document.createElement("p")
-      subtitleElem.textContent = subtitle;
+      subtitleElem.textContent = this.capitalize(subtitle) + (bonus ? " — Bonus" : "");
       textCont.appendChild(subtitleElem)
       questCont.appendChild(textCont)
     let pointsCont = document.createElement("div")
@@ -401,7 +439,7 @@ class QuestDisplay {
       pointsCont.appendChild(createSVG(ICONS.points.viewBox, ICONS.points.paths))
       questCont.appendChild(pointsCont)
     questCont.addEventListener("click", ()=>{
-      this.showQuestModal(questId)
+      this.showQuestModal(questId, bonus)
     })
 
     return questCont;
@@ -410,10 +448,16 @@ class QuestDisplay {
     if (!bonus) {
       return this.dailyQuestIds.findIndex(id=>id===questId)
     }
+    else {
+      return this.bonusQuestIds.findIndex(id=>id===questId)
+    }
   }
   getQuestElem(questId, bonus) {
     if (!bonus) {
-      return this.dailyQuestElems[this.getQuestIndex(questId, bonus)]
+      return this.dailyQuestElems[this.getQuestIndex(questId)]
+    }
+    else {
+      return this.bonusQuestElems[this.getQuestIndex(questId, true)]
     }
   }
   complete(questId, bonus) {
@@ -451,24 +495,35 @@ class QuestLogic {
     return `${now.getUTCFullYear()}-${String(now.getMonth()+1).padStart(2, 0)}-${String(now.getDate()).padStart(2, 0)}`;
   }
   getQuestIndex(questId, bonus) {
-    return this.dailyQuests.findIndex(quest=>quest.id===questId)
-  }
-  getQuest(questId, bonus) {
-    return this.dailyQuests.find(quest=>quest.id===questId)
-  }
-  toggleComplete(questId, bonus) {
-    let index = this.getQuestIndex(questId);
-    if (this.dailyQuests[index].completed) {
-      this.changePoints(-1 * this.dailyQuests[index].points)
-      this.questDisplay.uncomplete(questId);
-      this.dailyQuests[index].completed = false
+    if (bonus) {
+      return this.bonusQuests.findIndex(quest=>quest.id===questId)
     }
     else {
-      this.changePoints(this.dailyQuests[index].points)
-      this.questDisplay.complete(questId);
-      this.dailyQuests[index].completed = true
+      return this.dailyQuests.findIndex(quest=>quest.id===questId)
     }
-    this.serializeData(["dailyQuests"])
+  }
+  getQuest(questId, bonus) {
+    if (bonus) {
+      return this.bonusQuests.find(quest=>quest.id===questId)
+    }
+    else {
+      return this.dailyQuests.find(quest=>quest.id===questId)
+    }
+  }
+  toggleComplete(questId, bonus) {
+    let index = this.getQuestIndex(questId, bonus);
+    let questArray = bonus ? "bonusQuests" : "dailyQuests";
+    if (this[questArray][index].completed) {
+      this.changePoints(-1 * this[questArray][index].points)
+      this.questDisplay.uncomplete(questId, bonus);
+      this[questArray][index].completed = false
+    }
+    else {
+      this.changePoints(this[questArray][index].points)
+      this.questDisplay.complete(questId, bonus);
+      this[questArray][index].completed = true
+    }
+    this.serializeData([questArray])
   }
   continueDay() {
     this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points"])
@@ -476,16 +531,29 @@ class QuestLogic {
     this.questPool = new QuestPool(quests);
     this.questPool.buildWeightTable(this.disabledForToday, this.excludedCategories, {base: 10})
     this.dailyQuests.forEach(quest=>this.questDisplay.addQuest(quest))
+    console.log("hmm")
+    this.bonusQuests.forEach(quest=>this.questDisplay.addQuest(quest, true))
   }
   checkBonusTasks(date) {
-    // if (demoBirthdays[date]) {
-    //   let birthday = demoBirthdays[date];
-    //   bonusQuests.push(birthday);
-    //
-    // }
-    // if (bonusEvents[date]) {
-    //
-    // }
+    console.log(date)
+    if (demoBirthdays[date]) {
+      let birthdayName = demoBirthdays[date];
+      let quest = {
+        id: "birthday",
+        title: `${birthdayName}'s birthday!`,
+        points: 10,
+        summary: `Wish ${birthdayName} a happy birthday!`,
+        categories: ["event"]
+      }
+      this.bonusQuests.push({completed: false, bonus: true, ...quest})
+      this.questDisplay.addQuest(quest, true)
+    }
+    if (bonusEvents[date]) {
+      let quest = bonusEvents[date];
+      this.bonusQuests.push({completed: false, bonus: true, ...quest})
+      this.questDisplay.addQuest(quest, true)
+    }
+    this.serializeData(["bonusQuests"])
   }
   newDay(skipData) {
     let now = new Date();
