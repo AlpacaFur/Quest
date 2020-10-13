@@ -55,6 +55,115 @@ body {
   }
 }
 
+@keyframes unfold {
+	from {
+		transform: translateY(-150%);
+	}
+  // This fixes a really weird safari bug to do with stacking order :(
+  to {
+    transform: translateY(0%);
+  }
+}
+#questionBackground {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  padding: 10px;
+  z-index: 1;
+  background-color: #00000077;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  &.visible {
+    opacity: 1;
+    pointer-events: all;
+    #question div {
+      animation: unfold 0.3s ease-in-out;
+    }
+  }
+
+}
+#question {
+	width: 360px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	p {
+		width: 100%;
+		background-color: white;
+		font-size: 20px;
+		margin: 0;
+		padding: 12px 20px;
+		text-align: center;
+		box-sizing: border-box;
+		border-bottom: 1px solid #777;
+		user-select: none;
+		&.bold {
+			font-weight: bold;
+		}
+		&.danger {
+			color: #C1272D;
+		}
+	}
+	div {
+		width: 80%;
+		box-shadow: 2px 2px 10px -3px #000;
+		border-radius: 0px 0px 10px 10px;
+		margin-bottom: 10px;
+    animation-delay: 0.25s;
+    animation-fill-mode: backwards;
+    position: relative;
+    z-index: 2;
+		p {
+			cursor: pointer;
+			color: #333;
+		}
+		p:active {
+			background-color: #ddd;
+		}
+		p:last-child {
+			border: none;
+			border-radius: 0px 0px 10px 10px;
+		}
+	}
+	>p {
+		width: 95%;
+		font-size: 22px;
+		font-weight: bold;
+		border-radius: 10px;
+		position: relative;
+		z-index: 3;
+		box-shadow: 2px 2px 10px -3px #000;
+	}
+}
+
+#infoPaneBackground {
+  height: 100vh;
+  width: 100vw;
+  padding: 10px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  z-index: 1;
+  transition: background-color 0.25s ease;
+  pointer-events: none;
+  &.visible {
+    background-color: #00000077;
+    pointer-events: all;
+  }
+  &.visible>#infoPane {
+    transform: translateX(0vh);
+  }
+}
 #infoPane {
   position: absolute;
   bottom: 0px;
@@ -68,15 +177,73 @@ body {
   box-sizing: border-box;
   padding: 15px 25px 20px 25px;
   border-radius: 20px 20px 0px 0px;
-  &.visible {
-    transform: translateX(0vh);
+  #closeInfoPane {
+    display: flex;
+    align-items: center;
+    svg {
+      fill: #999;
+      width: 22px;
+      height: 22px;
+    }
+    p {
+      margin: 0;
+      color: #999;
+      font-size: 25px;
+      font-weight: bold;
+      margin-left: 12px;
+    }
   }
-  h1 {
-    margin-top: 7px;
+  h2 {
+    margin-top: 10px;
     margin-bottom: 0px;
+    font-size: 29px;
   }
-  p {
+  #infoPaneCategory {
     margin: 0px;
+    margin-top: -9px;
+    font-size: 21px;
+    color: #666;
+  }
+  #infoPaneText {
+    font-size: 21px;
+    margin-top: 5px;
+    margin-bottom: 0;
+  }
+  #infoPaneLinks {
+    display: flex;
+    margin-top: 8px;
+    a {
+      display: flex;
+      flex-direction: row;
+      border: 2px solid #999;
+      border-radius: 10px;
+      padding: 8px 18px 8px 10px;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      svg {
+        width:35px;
+        height: 35px;
+        fill: #777;
+      }
+      div {
+        margin-left: 12px;
+        display: flex;
+        flex-direction: column;
+        p {
+          margin: 0;
+        }
+        .title {
+          font-weight: bold;
+          font-size: 18px;
+          margin-top: -2px;
+        }
+        .url {
+          margin-top: -3px;
+        }
+      }
+    }
+
   }
 }
 
@@ -247,13 +414,17 @@ body {
 .bonus-title {
   font-size: 25px;
   margin: 14px 0px 0px 0px;
+  display: none;
+  &.visible {
+    display: block;
+  }
 }
 
 .quest {
 	max-width: 400px;
 	height: 80px;
 	background-color: transparent;
-	border: 3px solid #666;
+	border: 2.5px solid #666;
 	border-radius: 15px;
 	box-sizing: border-box;
 	background: linear-gradient(-45deg, #00805F, #00BF07, #fff, #fff);
@@ -334,6 +505,11 @@ body {
 			transition: fill 0.5s ease;
 		}
 	}
+	&.bonus {
+		// border-style: dashed;
+    border-color: #999;
+    border-width: 2.5px;
+	}
 	&.completed {
 		.check-box {
 			svg:first-child {
@@ -356,10 +532,7 @@ body {
 		}
 		background-position: 95% 95%;
 		border-color: transparent;
-	}
-	&.bonus {
-		border-style: dashed;
-	}
+  }
 }
 .add-quest {
 	max-width: 400px;

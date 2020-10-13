@@ -34,9 +34,34 @@
       	</div> -->
       </div>
     </div>
-    <div id="infoPane" class="Hvisible">
-      <h1>Hi, this is epic?</h1>
-      <p>This is a Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <div id="infoPaneBackground" class="">
+      <div id="infoPane">
+        <div id="closeInfoPane">
+          <svg viewBox="0 0 45.1 45.1"><path d="M45.1 4.54L40.56 0 22.55 18.01 4.54 0 0 4.54l18.01 18.01L0 40.56l4.54 4.54 18.01-18.01L40.56 45.1l4.54-4.54-18.01-18.01L45.1 4.54z"/></svg>
+          <p>CLOSE</p>
+        </div>
+        <h2 id="infoPaneTitle">Take a Walk Outside</h2>
+        <p id="infoPaneCategory">Event</p>
+        <p id="infoPaneText">Go on a walk, whether nearby or far away. Make sure to wear a mask and stay at least six feet away from other people!</p>
+        <div id="infoPaneLinks">
+          <a href="https://yelp.com" target="_blank">
+            <svg viewBox="0 0 67.89 67.89"><defs/><path d="M48.75 40.73c.27-2.24.48-4.48.48-6.79 0-2.31-.2-4.55-.48-6.79h11.47c.54 2.17.88 4.45.88 6.79s-.34 4.62-.88 6.79M42.74 59.61a52.73 52.73 0 004.68-12.08h10.01a27.23 27.23 0 01-14.69 12.08m-.85-18.88H26a44.96 44.96 0 01-.54-6.79c0-2.31.2-4.58.54-6.79h15.89c.31 2.21.54 4.48.54 6.79 0 2.31-.24 4.55-.54 6.79m-7.94 20.24a45.92 45.92 0 01-6.48-13.44h12.97a46.58 46.58 0 01-6.49 13.44m-13.58-40.6h-9.91A26.87 26.87 0 0125.12 8.29a58.06 58.06 0 00-4.75 12.08m-9.91 27.15h9.91a58.84 58.84 0 004.75 12.08 27.08 27.08 0 01-14.66-12.08m-2.79-6.79a28.14 28.14 0 01-.88-6.79c0-2.34.34-4.62.88-6.79h11.47a56.36 56.36 0 00-.48 6.79c0 2.31.2 4.55.48 6.79M33.95 6.89a46.02 46.02 0 016.48 13.48H27.46a46.05 46.05 0 016.49-13.48m23.49 13.48H47.42a53.48 53.48 0 00-4.68-12.08 27.07 27.07 0 0114.7 12.08M33.95 0a33.95 33.95 0 100 67.9 33.95 33.95 0 000-67.9z"/></svg>
+            <div>
+              <p class="title">Nearby Hiking Spots</p>
+              <p class="url">yelp.com</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div id="questionBackground">
+      <div id="question">
+        <p>Did you finish the book?</p>
+      	<div>
+      		<p class="bold">Yes</p>
+      		<p class="">No</p>
+      	</div>
+      </div>
     </div>
     <div class="main" id="main">
       <div id="pointsPane">
@@ -55,10 +80,10 @@
 
           </div>
           <div class="add-quest hidden" id="add-quest">
-          	<svg xmlns="http://www.w3.org/2000/svg" overflow="visible" viewBox="0 0 55 55"><path d="M27 55a5 5 0 01-5-5V5a5 5 0 0110 0v45a5 5 0 01-5 5z" class="st0"/><path d="M0 28a5 5 0 015-5h45a5 5 0 010 10H5a5 5 0 01-5-5z" class="st0"/></svg>
+          	<svg viewBox="0 0 55 55"><path d="M27 55a5 5 0 01-5-5V5a5 5 0 0110 0v45a5 5 0 01-5 5z"/><path d="M0 28a5 5 0 015-5h45a5 5 0 010 10H5a5 5 0 01-5-5z"/></svg>
           	<p>Add Quest</p>
           </div>
-          <h1 class="bonus-title">Bonus Quests</h1>
+          <h1 class="bonus-title" id="bonus-title">Bonus Quests</h1>
           <div id="bonus-quests">
 
           </div>
@@ -69,6 +94,7 @@
         <div class="">
           <button id="refresh">Refresh!</button>
           <button id="reset">RESET!</button>
+          <button id="newDay">New Day!</button>
         </div>
       </div>
     </div>
