@@ -20,7 +20,7 @@ body {
   height: 100vh;
   margin: 0px;
   box-sizing: border-box;
-  padding: 10px;
+  // padding: 10px;
   overflow: hidden;
   position: fixed;
   font-family: "Source Sans", sans-serif;
@@ -38,14 +38,16 @@ body {
   display: flex;
   flex-direction: row;
   flex: 1;
-  overflow-x: hidden;
+  // overflow-x: hidden;
   // scroll-snap-type: x mandatory;
   overflow-y: hidden;
   // padding: 0px 10px;
   >div {
     // scroll-snap-align: start;
     height: 100%;
-    width: calc(100vw - 20px);
+    width: calc(100vw);
+    padding: 10px;
+    box-sizing: border-box;
     >div {
       width: calc(100vw - 20px);
       height: 100%;
@@ -296,7 +298,7 @@ body {
   justify-content: center;
   // box-shadow: 0px 0px 10px -3px #000;
   border-top: 1px solid #bbb;
-  margin: 0 -10px -10px -10px;
+  // margin: 0 -10px -10px -10px;
   div {
     flex: 1;
     display: flex;

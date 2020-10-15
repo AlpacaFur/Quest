@@ -333,7 +333,7 @@ class QuestDisplay {
     if (this.currentPane !== -1) {
       document.getElementById(this.navList[this.currentPane]).classList.remove("active");
     }
-    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex-(20*paneIndex);
+    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex;
     document.getElementById(this.navList[paneIndex]).classList.add("active");
     this.currentPane = paneIndex;
   }
