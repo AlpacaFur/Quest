@@ -41,9 +41,7 @@ body {
   overflow-x: hidden;
   // scroll-snap-type: x mandatory;
   overflow-y: hidden;
-  // &.loaded {
-  //   scroll-behavior: smooth;
-  // }
+  // padding: 0px 10px;
   >div {
     // scroll-snap-align: start;
     height: 100%;
@@ -406,7 +404,7 @@ body {
 	}
 }
 
-.daily-title {
+.pane-title {
     margin-top: 2px;
     margin-bottom: 10px;
     font-size: 35px;
