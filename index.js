@@ -50,10 +50,10 @@ document.addEventListener("touchstart", function(){}, true);
 // 	document.getElementById("quest").classList.toggle("completed")
 // })
 
-function createSVG(viewBox, paths) {
+function createSVG(icon) {
   let svg = document.createElementNS('http://www.w3.org/2000/svg','svg')
-  svg.setAttribute("viewBox", viewBox)
-  paths.forEach((path)=>{
+  svg.setAttribute("viewBox", icon.viewBox)
+  icon.paths.forEach((path)=>{
     let pathElem = document.createElementNS('http://www.w3.org/2000/svg','path')
     pathElem.setAttribute("d", path)
     svg.appendChild(pathElem)
@@ -194,6 +194,13 @@ const bonusEvents = {
   }
 }
 
+const THEMES = [
+  {name: "default"},
+  {name: "sapphire", points: 50},
+  {name: "amethyst", points: 100},
+  {name: "topaz", points: 200},
+]
+
 // difficulty -> relaxed, normal, challenge
 
 class QuestPool {
@@ -259,16 +266,27 @@ class QuestDisplay {
     this.logic = logic;
     this.points = 0;
 
+    this.currentQPDChild = -1;
+    this.currentTheme = "default";
+    this.currentThemeMode = "light";
+
     this.navList = [
       "pointsNav",
       "questNav",
       "settingsNav"
     ]
 
+
+
     this.navList.forEach((id, index)=>{
       document.getElementById(id).addEventListener("click", ()=>{
-
         this.switchPanes(index);
+      })
+    })
+
+    Array.from(document.getElementById("quests-per-day").children).forEach((child, index)=>{
+      child.addEventListener("click", ()=>{
+        this.handleQPDChange(index);
       })
     })
 
@@ -328,6 +346,114 @@ class QuestDisplay {
   	}, 50)
   }
 
+  handleThemePress(theme, lightOrDark) {
+    if (this.logic.unlockedThemes.includes(theme)) {
+      this.changeActiveTheme(theme, lightOrDark)
+    }
+    else {
+      this.logic.attemptThemePurchase(theme, lightOrDark);
+    }
+  }
+
+  ownTheme(theme) {
+    let group = document.getElementById(`theme-group-${theme}`)
+    group.removeChild(group.lastChild);
+    let p = document.createElement("p");
+    p.textContent = "OWNED";
+    group.appendChild(p);
+  }
+
+  changeActiveTheme(theme, lightOrDark, skipRemove) {
+    if (theme === this.currentTheme && lightOrDark === this.currentThemeMode) return;
+    if (!skipRemove) {
+      document.getElementById(`theme-card-${this.currentTheme}-${this.currentThemeMode}`).classList.remove("active")
+      document.body.classList.remove(this.currentTheme)
+      document.body.classList.remove(this.currentThemeMode)
+    }
+    document.getElementById(`theme-card-${theme}-${lightOrDark}`).classList.add("active")
+    this.currentTheme = theme;
+    this.currentThemeMode = lightOrDark;
+    document.body.classList.add(theme)
+    document.body.classList.add(lightOrDark)
+    this.logic.updateTheme(theme, lightOrDark)
+  }
+
+  initializeSettings(settings) {
+    let themeElement = document.getElementById("themes")
+    THEMES.forEach((theme)=>{
+      let owned = this.logic.unlockedThemes.includes(theme.name)
+      themeElement.appendChild(this.createThemeGroup(theme.name, owned, theme.points))
+    })
+    this.changeActiveTheme(this.logic.theme, this.logic.themeMode, true)
+    // document.body.classList.remove("default")
+    // document.body.classList.remove("light")
+    // document.body.classList.add(this.logic.theme)
+    // document.body.classList.add(this.logic.themeMode)
+    this.handleQPDChange(settings.numberOfQuests-1, true)
+  }
+
+  handleQPDChange(childPos, skipDataUpdate) {
+    if (childPos === this.currentQPDChild) return;
+    if (this.currentQPDChild !== -1) document.getElementById("quests-per-day").children[this.currentQPDChild].classList.remove("selected")
+    document.getElementById("quests-per-day").children[childPos].classList.add("selected")
+    this.currentQPDChild = childPos;
+    if (!skipDataUpdate) {
+      this.logic.setNumberOfQuests(childPos+1)
+      this.showQuestionModal({
+        title: "This change will take effect tomorrow.",
+        choices: [
+          {id:"ok", text: "OK"}
+        ]
+      }).then(()=>{
+        this.hideQuestionModal();
+      })
+    }
+  }
+
+  createThemeGroup(theme, owned, points) {
+    let groupCont = document.createElement("div");
+    groupCont.classList.add("theme-group")
+    groupCont.setAttribute("id", `theme-group-${theme}`)
+    if (owned) groupCont.classList.add("owned")
+    let mainCont = document.createElement("div");
+    mainCont.classList.add("theme-pair");
+    mainCont.classList.add(theme);
+    for (let i = 0; i<2; i++) {
+      let shellCont = document.createElement("div");
+      let lightOrDark = i===0? "light" : "dark";
+      shellCont.setAttribute("id", `theme-card-${theme}-${lightOrDark}`)
+      shellCont.addEventListener("click", ()=>{
+        this.handleThemePress(theme, lightOrDark)
+      })
+      let themeCard = document.createElement("div");
+      themeCard.classList.add("theme-card")
+      themeCard.classList.add(lightOrDark);
+      for (let i = 0; i<6; i++) {
+        themeCard.appendChild(document.createElement("div"))
+      }
+      shellCont.appendChild(themeCard)
+      mainCont.appendChild(shellCont)
+    }
+    groupCont.appendChild(mainCont);
+    let title = document.createElement("p");
+    title.textContent = this.capitalize(theme);
+    groupCont.appendChild(title)
+    if (owned) {
+      let owned = document.createElement("p");
+      owned.textContent = "OWNED"
+      groupCont.appendChild(owned)
+    }
+    else {
+      let pointsCont = document.createElement("div");
+      pointsCont.appendChild(createSVG(ICONS.points))
+      let pointsText = document.createElement("p");
+      pointsText.textContent = points;
+      pointsCont.appendChild(pointsText);
+      groupCont.appendChild(pointsCont)
+    }
+    return groupCont;
+  }
+
   switchPanes(paneIndex) {
     if (paneIndex === this.currentPane) return;
     if (this.currentPane !== -1) {
@@ -351,7 +477,7 @@ class QuestDisplay {
         let text = document.createElement("p");
         text.textContent = choice.text;
         div.appendChild(text);
-        let svg = createSVG(ICONS[choice.icon].viewBox, ICONS[choice.icon].paths);
+        let svg = createSVG(ICONS[choice.icon]);
         div.appendChild(svg);
         div.addEventListener("click", ()=>{
           resolve(choice.id)
@@ -398,7 +524,7 @@ class QuestDisplay {
         let cont = document.createElement("a");
         cont.setAttribute("href", resource.url)
         cont.setAttribute("target", "__blank")
-        cont.appendChild(createSVG(ICONS.globe.viewBox, ICONS.globe.paths))
+        cont.appendChild(createSVG(ICONS.globe))
         let textCont = document.createElement("div");
         let titleElem = document.createElement("p");
         titleElem.classList.add("title");
@@ -628,7 +754,7 @@ class QuestDisplay {
       let pointText = document.createElement("p")
       pointText.textContent = points;
       pointsCont.appendChild(pointText)
-      pointsCont.appendChild(createSVG(ICONS.points.viewBox, ICONS.points.paths))
+      pointsCont.appendChild(createSVG(ICONS.points))
       questCont.appendChild(pointsCont)
     questCont.addEventListener("click", ()=>{
       this.showQuestModal(questId, bonus)
@@ -672,6 +798,9 @@ class QuestLogic {
     this.excludedQuests = [];
     this.excludedCategories = [];
     this.disabledForToday = [];
+    this.unlockedThemes = ["default"];
+    this.theme = "default";
+    this.themeMode = "light";
     this.questPool = null;
     this.questDisplay = null;
     this.points = null;
@@ -731,6 +860,11 @@ class QuestLogic {
     this.questPool.buildWeightTable(this.dailyQuests.concat(this.excludedQuests), this.excludedCategories, {base: 10})
   }
 
+  setNumberOfQuests(number) {
+    this.settings.numberOfQuests = number;
+    this.serializeData(["settings"])
+  }
+
   addQuestWithId(questId) {
     let questAvailible = this.questPool.riggedPull(questId);
     if (questAvailible) {
@@ -738,7 +872,42 @@ class QuestLogic {
       this.questDisplay.addQuest(quests[questId]);
     }
   }
-
+  attemptThemePurchase(theme, lightOrDark) {
+    let themeCost = THEMES.find(themeCandidate=>themeCandidate.name===theme).points
+    if (this.points >= themeCost) {
+      this.questDisplay.showQuestionModal({
+        title: `Would you like to purchase "${this.questDisplay.capitalize(theme)}" for ${themeCost} points?`,
+        choices: [
+          {id: "yes", text:"Yes", class: "confirm"},
+          {id: "cancel", text:"Cancel"}
+        ]
+      }).then((choice)=>{
+        if (choice === "yes") {
+          this.changePoints(-1 * themeCost);
+          this.unlockedThemes.push(theme);
+          this.questDisplay.changeActiveTheme(theme, lightOrDark);
+          this.questDisplay.ownTheme(theme);
+          this.serializeData(["unlockedThemes"])
+        }
+        this.questDisplay.hideQuestionModal();
+      })
+    }
+    else {
+      this.questDisplay.showQuestionModal({
+        title: `You need ${themeCost - this.points} more points to buy "${this.questDisplay.capitalize(theme)}"`,
+        choices: [
+          {id: "ok", text:"Ok", class: "bold"}
+        ]
+      }).then(()=>{
+        this.questDisplay.hideQuestionModal();
+      })
+    }
+  }
+  updateTheme(theme, lightOrDark) {
+    this.theme = theme;
+    this.themeMode = lightOrDark;
+    this.serializeData(["theme", "themeMode"])
+  }
   toggleComplete(questId, bonus) {
     let index = this.getQuestIndex(questId, bonus);
     let questArray = bonus ? "bonusQuests" : "dailyQuests";
@@ -786,7 +955,8 @@ class QuestLogic {
     this.serializeData(["recurringQuests", "excludedParents"])
   }
   continueDay() {
-    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "excludedParents"])
+    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
+    this.questDisplay.initializeSettings(this.settings)
     this.disabledForToday = this.excludedQuests.concat(this.dailyQuests, this.excludedParents)
     this.questPool = new QuestPool(quests);
     this.questPool.buildWeightTable(this.disabledForToday, this.excludedCategories, {base: 10})
@@ -817,7 +987,8 @@ class QuestLogic {
     let now = new Date();
     let date = `${String(now.getMonth()+1).padStart(2, 0)}/${String(now.getDate()).padStart(2, 0)}`;
     console.log(date)
-    this.deserializeData(["excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents"])
+    this.deserializeData(["excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
+    this.questDisplay.initializeSettings(this.settings)
     this.checkBonusTasks(date);
     this.disabledForToday = this.excludedQuests.concat(this.excludedParents);
     this.lastDate = this.getCurrentDate();
@@ -872,22 +1043,10 @@ class QuestLogic {
   firstDataGeneration() {
     // The first time the app is launched
     this.points = 0;
-    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents"])
+    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
     localStorage.dataPresent = true;
     this.newDay(true)
   }
 }
 
-// var questDisplay = new QuestDisplay("daily-quests", "bonus-quests");
 var questLogic = new QuestLogic();
-// questLogic.questDisplay.showQuestionModal({
-//   title: "Did you finish the book?",
-//   choices: [
-//     {id:"yes", text: "Yes"},
-//     {id:"no", text: "No"},
-//   ]
-// }).then((res)=>{
-//   if (res==="yes") console.log("AYY")
-// })
-// switchPanes(1);
-// document.getElementById("main").scrollLeft=500

@@ -14,7 +14,7 @@
     <script src="index.js" defer></script>
     <!-- <meta name="color-scheme" content="light dark"> -->
   </head>
-  <body>
+  <body class="default light">
     <div class="modal-background hidden" id="modal-background">
       <div class="modal" id="modal">
       	<!-- <div class="complete">
@@ -66,7 +66,11 @@
     <div class="main" id="main">
       <div id="pointsPane">
         <div>
-          <p id="pointsDedicated">0</p>
+          <div class="pointsDedicatedCont">
+            <svg viewBox="0 0 32 32"><path d="M16 0l-4.36 11.64L0 16l11.64 4.36L16 32l4.36-11.64L32 16l-11.64-4.36L16 0z"></path></svg>
+            <p id="pointsDedicated">0</p>
+          </div>
+          <div class="themes" id="themes"></div>
         </div>
       </div>
       <div id="questsPane">
@@ -87,15 +91,40 @@
           <div id="bonus-quests">
 
           </div>
-          <!-- <a href="https://google.com" target="_blank">googingang</a> -->
         </div>
       </div>
       <div id="settingsPane">
         <div>
           <h1 class="pane-title">Settings</h1>
-          <button id="refresh">Refresh!</button>
-          <button id="reset">RESET!</button>
-          <button id="newDay">New Day!</button>
+          <h2>Quests per Day</h2>
+          <div class="circles" id="quests-per-day">
+          	<div>
+          		<p>1</p>
+          	</div>
+          	<div>
+          		<p>2</p>
+          	</div>
+          	<div>
+          		<p>3</p>
+          	</div>
+          </div>
+          <h2>Debug Settings</h2>
+          <div class="button green" id="refresh">
+          	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+          	<p>Refresh</p>
+          </div><br>
+          <div class="button green" id="newDay">
+          	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+          	<p>New Day</p>
+          </div><br>
+          <!-- <div class="button green">
+          	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+          	<p>Edit Quest Data</p>
+          </div><br> -->
+          <div class="button red" id="reset">
+          	<svg viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12z"/></svg>
+          	<p>Reset Data</p>
+          </div>
         </div>
       </div>
     </div>
