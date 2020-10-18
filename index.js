@@ -60,15 +60,8 @@ document.getElementById("newDay").addEventListener("click", ()=>{
   localStorage.lastDate = "0"
   window.location.reload();
 })
-// document.getElementById("add-quest").addEventListener("click", ()=>{
-//   showQuests();
-// })
 
 document.addEventListener("touchstart", function(){}, true);
-
-// document.getElementById("box").addEventListener("click", ()=>{
-// 	document.getElementById("quest").classList.toggle("completed")
-// })
 
 function createSVG(icon) {
   let svg = document.createElementNS('http://www.w3.org/2000/svg','svg')
@@ -177,6 +170,11 @@ const quests = {
         category: "physical"
       }
     ]
+  },
+  "birthday": {
+    title: "Birthday",
+    bonus: true,
+    categories: ["bonus"]
   }
 }
 
@@ -234,7 +232,7 @@ class QuestPool {
     this.weightTable = []
     this.currentTableSum = 0;
     Object.entries(this.allQuests).forEach(([id, quest]) => {
-      if (disabledQuests.includes(id)) return;
+      if (disabledQuests.includes(id) || quest.bonus) return;
       const isNotCategoryExcluded = quest.categories.every((category)=>{return !disabledCategories.includes(category)})
       if (isNotCategoryExcluded && !quest.recurs) {
         let multiplier = 1;
@@ -308,6 +306,10 @@ class QuestDisplay {
       this.attemptBirthdayAdd();
     })
 
+    document.getElementById("add-quest").addEventListener("click", ()=>{
+      this.logic.addQuest();
+    })
+
     this.navList.forEach((id, index)=>{
       document.getElementById(id).addEventListener("click", ()=>{
         this.switchPanes(index);
@@ -338,7 +340,7 @@ class QuestDisplay {
 
     this.currentPane = -1;
 
-    this.switchPanes(2, true);
+    this.switchPanes(1, true);
     // document.getElementsByClassName("main")[0].classList.add("loaded")
 
     this.dailyQuestParent = document.getElementById(mainQuestElemId)
@@ -360,8 +362,8 @@ class QuestDisplay {
     let className = Math.sign(to - from) === 1 ? "adding" : "subtracting";
     if (this.numberAnimationID) {
       clearInterval(this.numberAnimationID);
-      let oppositeClassName = Math.sign(to - from) === 1 ? "subtracting" : "adding";
-      document.getElementById("pointsMainContainer").classList.remove(oppositeClassName);
+      document.getElementById("pointsMainContainer").classList.remove("adding");
+      document.getElementById("pointsMainContainer").classList.remove("subtracting");
     }
 
     document.getElementById("pointsMainContainer").classList.add(className);
@@ -399,6 +401,11 @@ class QuestDisplay {
     let p = document.createElement("p");
     p.textContent = "OWNED";
     group.appendChild(p);
+  }
+
+  checkAddQuest() {
+    if (this.dailyQuestIds.length < 3) document.getElementById("add-quest").classList.remove("hidden")
+    else document.getElementById("add-quest").classList.add("hidden")
   }
 
   changeActiveTheme(theme, lightOrDark, skipRemove) {
@@ -493,16 +500,16 @@ class QuestDisplay {
   }
 
   scroll(elem, to, durationInSeconds) {
-      if (this.numberAnimationID) clearInterval(this.numberAnimationID);
+      if (this.scrollAnimationID) clearInterval(this.scrollAnimationID);
       let fps = 120
       let totalFrames = Math.ceil(durationInSeconds*fps)
       let framesLeft = totalFrames;
       let from = elem.scrollLeft
       let diff = to-from;
-      this.numberAnimationID = setInterval(()=>{
+      this.scrollAnimationID = setInterval(()=>{
           if (framesLeft===2) {
             elem.scrollLeft = from + diff;
-            clearInterval(this.numberAnimationID)
+            clearInterval(this.scrollAnimationID)
             return;
           }
           let scrollPercent = Math.pow(1 - framesLeft/totalFrames, 0.07*framesLeft)
@@ -759,7 +766,9 @@ class QuestDisplay {
     else if (option.action === "hide-and-replace") {
       this.logic.removeQuest(questId, bonus)
       this.removeQuest(questId, bonus)
-      this.logic.addQuestWithId(option.to, bonus)
+      setTimeout(()=>{
+        this.logic.addQuestWithId(option.to, bonus)
+      }, 500)
       // replace with take a walk
     }
   }
@@ -876,13 +885,22 @@ class QuestDisplay {
   removeQuest(questId, bonus) {
     if (!bonus) {
       let index = this.getQuestIndex(questId)
-      this.removeElement(this.getQuestElem(questId))
+      let elem = this.getQuestElem(questId)
+      elem.classList.add("removing")
+      setTimeout(()=>{
+        this.removeElement(elem)
+        this.checkAddQuest()
+      }, 500)
       this.dailyQuestElems.splice(index, 1)
       this.dailyQuestIds.splice(index, 1)
     }
     else {
       let index = this.getQuestIndex(questId, true)
-      this.removeElement(this.getQuestElem(questId, true))
+      let elem = this.getQuestElem(questId, true)
+      elem.classList.add("removing")
+      setTimeout(()=>{
+        this.removeElement(elem)
+      }, 500)
       this.bonusQuestElems.splice(index, 1)
       this.bonusQuestIds.splice(index, 1)
       this.checkBonusQuestVisibility()
@@ -898,12 +916,20 @@ class QuestDisplay {
     return string.slice(0,1).toUpperCase() + string.slice(1)
   }
 
-  addQuest(quest, bonus) {
+  addQuest(quest, bonus, skipAnimation) {
     if (!bonus) {
       let questElem = this.buildQuest(quest.title, quest.categories[0], quest.points, quest.id, quest.completed, false, quest.recurs || !!quest.recurringQuest)
+      if (!skipAnimation) {
+        questElem.classList.add("adding")
+      }
       this.dailyQuestParent.appendChild(questElem);
+      // This timeout is to make sure that the transition triggers
+      setTimeout(()=>{
+        questElem.classList.remove("adding")
+      }, 10)
       this.dailyQuestElems.push(questElem)
       this.dailyQuestIds.push(quest.id)
+      this.checkAddQuest()
     }
     else {
       let questElem = this.buildQuest(quest.title, quest.categories[0], quest.points, quest.id, quest.completed, true, quest.recurs || !!quest.recurringQuest)
@@ -986,6 +1012,7 @@ class QuestLogic {
     this.excludedQuests = [];
     this.excludedCategories = [];
     this.disabledForToday = [];
+    this.birthdays = {}
     this.unlockedThemes = ["default"];
     this.theme = "default";
     this.themeMode = "light";
@@ -1039,13 +1066,18 @@ class QuestLogic {
     else if (quest.recurringQuest && quest.completed) this.removeRecurringQuest(quest.recurringQuest)
     if (!this.excludedQuests.includes(questId)) this.excludedQuests.push(questId);
     this.serializeData(["excludedQuests"])
+    this.updateWeightTable()
   }
   hideCategory(category) {
     if (!this.excludedCategories.includes(category)) this.excludedCategories.push(category);
     this.serializeData(["excludedCategories"])
   }
   updateWeightTable() {
-    this.questPool.buildWeightTable(this.dailyQuests.concat(this.excludedQuests), this.excludedCategories, {base: 10})
+    let dailyQuestIds = this.dailyQuests.map(quest=>quest.id)
+    console.log(dailyQuestIds)
+    console.log(this.excludedQuests)
+    console.log(dailyQuestIds.concat(this.excludedQuests))
+    this.questPool.buildWeightTable(dailyQuestIds.concat(this.excludedQuests), this.excludedCategories, {base: 10})
   }
 
   setBirthday(date, name) {
@@ -1071,8 +1103,16 @@ class QuestLogic {
       this.excludedQuests.splice(this.excludedQuests.findIndex(questId=>questId===id), 1)
       this.serializeData(["excludedQuests"])
     }
+    this.updateWeightTable()
   }
-
+  addQuest() {
+    let quest = this.questPool.pull()
+    if (quest) {
+      this.dailyQuests.push({completed: false, ...quest})
+      this.questDisplay.addQuest(quest, false);
+      this.serializeData(["dailyQuests"])
+    }
+  }
   addQuestWithId(questId) {
     let questAvailible = this.questPool.riggedPull(questId);
     if (questAvailible) {
@@ -1171,8 +1211,8 @@ class QuestLogic {
     this.disabledForToday = this.excludedQuests.concat(this.dailyQuests, this.excludedParents)
     this.questPool = new QuestPool(quests);
     this.questPool.buildWeightTable(this.disabledForToday, this.excludedCategories, {base: 10})
-    this.dailyQuests.forEach(quest=>this.questDisplay.addQuest(quest))
-    this.bonusQuests.forEach(quest=>this.questDisplay.addQuest(quest, true))
+    this.dailyQuests.forEach(quest=>this.questDisplay.addQuest(quest, false, true))
+    this.bonusQuests.forEach(quest=>this.questDisplay.addQuest(quest, true, true))
   }
   checkBonusTasks(date) {
     if (this.birthdays[date] && !this.excludedQuests.includes("birthday")) {
@@ -1243,6 +1283,7 @@ class QuestLogic {
   }
   deserializeData(categories) {
     categories.forEach((category)=>{
+      console.log(category)
       this[category] = JSON.parse(localStorage[category]);
     })
   }

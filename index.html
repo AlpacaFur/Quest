@@ -2,13 +2,15 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>CAC App</title>
+    <title>Quest</title>
     <link rel="preload" href="/assets/fonts/sourcesans-regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/sourcesans-bold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!-- media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" -->
+    <link rel="apple-touch-startup-image" href="/assets/splash.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/index.css">
     <script src="index.js" defer></script>
@@ -225,7 +227,7 @@
           	<svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 00-8 8 8 8 0 008 8 7.98 7.98 0 007.73-6h-2.08A6 6 0 0112 18a6 6 0 01-6-6 6 6 0 016-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
           	<p>Refresh</p>
           </div><br>
-          <div class="button accent" id="newDay">
+          <div class="button accent" id="newDay" style="display: none">
           	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
           	<p>New Day</p>
           </div><br>
