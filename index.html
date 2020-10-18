@@ -12,7 +12,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/index.css">
     <script src="index.js" defer></script>
-    <!-- <meta name="color-scheme" content="light dark"> -->
+    <meta name="color-scheme" content="light dark">
   </head>
   <body class="default light">
     <div class="modal-background hidden" id="modal-background">
@@ -63,6 +63,109 @@
       	</div>
       </div>
     </div>
+    <div id="sidebarBackground" class="">
+      <div id="sidebar">
+        <div id="closeSidebar">
+          <svg viewBox="0 0 45.1 45.1"><path d="M45.1 4.54L40.56 0 22.55 18.01 4.54 0 0 4.54l18.01 18.01L0 40.56l4.54 4.54 18.01-18.01L40.56 45.1l4.54-4.54-18.01-18.01L45.1 4.54z"/></svg>
+          <p>CLOSE</p>
+        </div>
+        <div class="birthdayContent">
+          <h2>New Birthday</h2>
+          <div class="birthday-box">
+            <input type="text" placeholder="Name" id="birthday-name"><br>
+            <div class="select-cont">
+              <select name="month" id="birthday-month">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
+            <div class="select-cont">
+              <select name="day" id="birthday-day">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="23">23</option>
+                <option value="24">24</option>
+                <option value="25">25</option>
+                <option value="26">26</option>
+                <option value="27">27</option>
+                <option value="28">28</option>
+                <option value="29">29</option>
+                <option value="30">30</option>
+                <option value="31">31</option>
+              </select>
+            </div><br>
+            <p id="add-button">Add</p>
+          </div>
+          <h2>Birthdays</h2>
+        </div>
+        <div id="sidebarContent">
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+          <div class="button-label">
+            <p>Sept. 10 - Luke </p>
+            <p>Remove</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <div class="main" id="main">
       <div id="pointsPane">
         <div>
@@ -108,19 +211,24 @@
           		<p>3</p>
           	</div>
           </div>
-          <h2>Debug Settings</h2>
-          <div class="button green" id="refresh">
+          <h2>Quest Management</h2>
+          <div class="button accent" id="hidden-quests-button">
+          	<svg viewBox="-2 -1 28 26"><path d="M11.83 9L15 12.16V12a3 3 0 00-3-3h-.17m-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 01-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28.45.45C3.08 8.3 1.78 10 1 12a11.83 11.83 0 0015.38 6.66l.43.42L19.73 22 21 20.73 3.27 3M12 7a5 5 0 015 5 4.8 4.8 0 01-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75A11.83 11.83 0 008 5.2l2.17 2.15A5.05 5.05 0 0112 7z"/></svg>
+          	<p>View Hidden Quests</p>
+          </div><br>
+          <div class="button accent" id="birthday-button">
           	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+          	<p>Edit Birthdays</p>
+          </div><br>
+          <h2>Debug Settings</h2>
+          <div class="button accent" id="refresh">
+          	<svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 00-8 8 8 8 0 008 8 7.98 7.98 0 007.73-6h-2.08A6 6 0 0112 18a6 6 0 01-6-6 6 6 0 016-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
           	<p>Refresh</p>
           </div><br>
-          <div class="button green" id="newDay">
+          <div class="button accent" id="newDay">
           	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
           	<p>New Day</p>
           </div><br>
-          <!-- <div class="button green">
-          	<svg viewBox="0 0 24 24"><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
-          	<p>Edit Quest Data</p>
-          </div><br> -->
           <div class="button red" id="reset">
           	<svg viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12z"/></svg>
           	<p>Reset Data</p>

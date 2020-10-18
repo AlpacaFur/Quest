@@ -33,8 +33,28 @@ document.getElementById("refresh").addEventListener("click", ()=>{
   window.location.reload();
 })
 document.getElementById("reset").addEventListener("click", ()=>{
-  localStorage.clear()
-  window.location.reload();
+  try {
+    questLogic.questDisplay.showQuestionModal({
+      title: "Are you sure you want to reset everything?",
+      choices: [
+        {id:"yes", text:"Yes", class:"danger"},
+        {id:"cancel", text:"Cancel", class:"bold"}
+      ]
+    }).then((choice)=>{
+      if (choice === "yes") {
+        localStorage.clear()
+        window.location.reload();
+      }
+      questLogic.questDisplay.hideQuestionModal();
+    }).catch(()=>{
+      localStorage.clear()
+      window.location.reload();
+    })
+  }
+  catch {
+    localStorage.clear()
+    window.location.reload();
+  }
 })
 document.getElementById("newDay").addEventListener("click", ()=>{
   localStorage.lastDate = "0"
@@ -263,6 +283,7 @@ class QuestDisplay {
     this.dailyQuestIds = [];
     this.bonusQuestElems = [];
     this.bonusQuestIds = [];
+    this.birthdays = {};
     this.logic = logic;
     this.points = 0;
 
@@ -276,7 +297,16 @@ class QuestDisplay {
       "settingsNav"
     ]
 
+    document.getElementById("hidden-quests-button").addEventListener("click", ()=>{
+      this.showHiddenQuestsMenu();
+    })
+    document.getElementById("birthday-button").addEventListener("click", ()=>{
+      this.showBirthdaysMenu();
+    })
 
+    document.getElementById("add-button").addEventListener("click", ()=>{
+      this.attemptBirthdayAdd();
+    })
 
     this.navList.forEach((id, index)=>{
       document.getElementById(id).addEventListener("click", ()=>{
@@ -290,6 +320,14 @@ class QuestDisplay {
       })
     })
 
+    document.getElementById("closeSidebar").addEventListener("click", ()=>{
+      this.hideSidebar();
+    })
+    let sidebarBackground = document.getElementById("sidebarBackground")
+    sidebarBackground.addEventListener("click", (e)=>{
+      if (e.target === sidebarBackground) this.hideSidebar();
+    })
+
     document.getElementById("closeInfoPane").addEventListener("click", ()=>{
       this.hideInfoModal();
     })
@@ -300,8 +338,8 @@ class QuestDisplay {
 
     this.currentPane = -1;
 
-    this.switchPanes(1);
-    document.getElementsByClassName("main")[0].classList.add("loaded")
+    this.switchPanes(2, true);
+    // document.getElementsByClassName("main")[0].classList.add("loaded")
 
     this.dailyQuestParent = document.getElementById(mainQuestElemId)
     this.bonusQuestParent = document.getElementById(bonusQuestElemId)
@@ -364,7 +402,7 @@ class QuestDisplay {
   }
 
   changeActiveTheme(theme, lightOrDark, skipRemove) {
-    if (theme === this.currentTheme && lightOrDark === this.currentThemeMode) return;
+    if (theme === this.currentTheme && lightOrDark === this.currentThemeMode && !skipRemove) return;
     if (!skipRemove) {
       document.getElementById(`theme-card-${this.currentTheme}-${this.currentThemeMode}`).classList.remove("active")
       document.body.classList.remove(this.currentTheme)
@@ -454,14 +492,160 @@ class QuestDisplay {
     return groupCont;
   }
 
-  switchPanes(paneIndex) {
+  scroll(elem, to, durationInSeconds) {
+      if (this.numberAnimationID) clearInterval(this.numberAnimationID);
+      let fps = 120
+      let totalFrames = Math.ceil(durationInSeconds*fps)
+      let framesLeft = totalFrames;
+      let from = elem.scrollLeft
+      let diff = to-from;
+      this.numberAnimationID = setInterval(()=>{
+          if (framesLeft===2) {
+            elem.scrollLeft = from + diff;
+            clearInterval(this.numberAnimationID)
+            return;
+          }
+          let scrollPercent = Math.pow(1 - framesLeft/totalFrames, 0.07*framesLeft)
+          elem.scrollLeft = from + diff*scrollPercent;
+          framesLeft--;
+          // console.log(scrollPercent)
+      }, Math.round(1000/fps))
+  }
+
+  attemptBirthdayAdd() {
+    let name = document.getElementById("birthday-name").value
+    if (name === "") return;
+    let monthElem = document.getElementById("birthday-month");
+    console.log(monthElem)
+    let month = monthElem.options[monthElem.selectedIndex].value
+    let dayElem = document.getElementById("birthday-day");
+    let day = dayElem.options[dayElem.selectedIndex].value
+    let compressedDate = `${month}/${day}`
+    this.logic.setBirthday(compressedDate, name)
+    let content = document.getElementById("sidebarContent").prepend(this.createBirthdayGroup(compressedDate, name))
+    document.getElementById("birthday-name").value = ""
+
+  }
+
+  showHiddenQuestsMenu() {
+    let hiddenQuests = this.logic.excludedQuests;
+    let hiddenCategories = this.logic.excludedCategories;
+    let content = document.getElementById("sidebarContent");
+    this.removeChildren(content);
+    let frag = document.createDocumentFragment();
+    let title = document.createElement("h2");
+      title.textContent = "Hidden Quests";
+      frag.appendChild(title)
+    hiddenQuests.forEach((quest, index)=>{
+      let cont = document.createElement("div");
+      cont.classList.add("button-label")
+      let p = document.createElement("p");
+        p.textContent = quests[quest].title;
+        cont.appendChild(p);
+      let button = document.createElement("p");
+        button.textContent = "Unhide";
+        cont.appendChild(button);
+      button.addEventListener("click", ()=>{
+        button.parentElement.parentElement.removeChild(button.parentElement)
+        this.logic.unhide("quest", quest)
+      })
+      frag.appendChild(cont)
+    })
+    let message1 = document.createElement("p")
+      message1.classList.add("message");
+      message1.textContent = "You haven't hidden any quests"
+      frag.appendChild(message1)
+    let categoryTitle = document.createElement("h2");
+      categoryTitle.textContent = "Hidden Categories";
+      frag.appendChild(categoryTitle)
+    hiddenCategories.forEach((category, index)=>{
+      let cont = document.createElement("div");
+      cont.classList.add("button-label")
+      let p = document.createElement("p");
+        p.textContent = this.capitalize(category);
+        cont.appendChild(p);
+      let button = document.createElement("p");
+        button.textContent = "Unhide";
+        cont.appendChild(button);
+      button.addEventListener("click", ()=>{
+        button.parentElement.parentElement.removeChild(button.parentElement)
+        this.logic.unhide("category", category)
+      })
+      frag.appendChild(cont)
+    })
+    let message2 = document.createElement("p")
+      message2.classList.add("message");
+      message2.textContent = "You haven't hidden any quests"
+      frag.appendChild(message2)
+    content.appendChild(frag)
+    this.showSidebar()
+  }
+  createBirthdayGroup(date, name) {
+    let cont = document.createElement("div");
+    cont.classList.add("button-label")
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let nameAndDate = document.createElement("p");
+      let dateArr = date.split("/")
+      nameAndDate.textContent = `${months[dateArr[0]-1]}. ${dateArr[1]} - ${name}`;
+      cont.appendChild(nameAndDate)
+    let button = document.createElement("p");
+      button.textContent = "Remove";
+      cont.appendChild(button)
+    button.addEventListener("click", ()=>{
+      button.parentElement.parentElement.removeChild(button.parentElement);
+      this.logic.removeBirthday(date)
+    })
+    return cont;
+  }
+  showBirthdaysMenu() {
+    // let hiddenQuests = this.logic.excludedQuests;
+    // let hiddenCategories = this.logic.excludedCategories;
+    let content = document.getElementById("sidebarContent");
+    this.removeChildren(content);
+    let frag = document.createDocumentFragment();
+    let birthdays = Object.entries(this.logic.birthdays)
+      .sort(([date1, name1], [date2, name2])=>{
+        let monthDiff = Number(date1.split("/")[0]) - Number(date2.split("/")[0])
+        let dayDiff = Number(date1.split("/")[1]) - Number(date2.split("/")[1])
+        if (monthDiff === 0) return dayDiff;
+        else return monthDiff
+      })
+    birthdays.forEach(([date, name]) => {
+      let cont = this.createBirthdayGroup(date, name);
+      frag.appendChild(cont);
+    })
+    let message = document.createElement("p")
+      message.classList.add("message");
+      message.textContent = "You haven't added any birthdays"
+      frag.appendChild(message)
+    content.appendChild(frag)
+    this.showSidebar()
+    document.getElementById("sidebarBackground").classList.add("birthday")
+  }
+
+  showSidebar() {
+    document.getElementById("sidebarBackground").classList.remove("birthday")
+    document.getElementById("sidebarBackground").classList.add("visible")
+  }
+  hideSidebar() {
+    document.getElementById("sidebarBackground").classList.remove("visible")
+  }
+
+  switchPanes(paneIndex, skipAnimation) {
     if (paneIndex === this.currentPane) return;
     if (this.currentPane !== -1) {
       document.getElementById(this.navList[this.currentPane]).classList.remove("active");
     }
-    document.getElementById("main").scrollLeft=window.innerWidth*paneIndex;
+    // document.getElementById("main").scrollLeft=window.innerWidth*paneIndex;
     document.getElementById(this.navList[paneIndex]).classList.add("active");
     this.currentPane = paneIndex;
+    if (!skipAnimation) {
+      this.scroll(document.getElementById("main"), window.innerWidth*paneIndex, 0.4)
+    }
+    else {
+      document.getElementById("main").scrollLeft = window.innerWidth*paneIndex;
+    }
+    // document.getElementById("main").children[paneIndex].scrollIntoView({behavior:"smooth"})
   }
 
   setModal(choices) {
@@ -598,7 +782,7 @@ class QuestDisplay {
           this.hideQuestionModal();
         }
         else if (result === "other") {
-          // Hide Quest!
+          this.logic.removeQuest(questId, bonus)
           this.removeQuest(questId, bonus)
           this.hideQuestionModal();
         }
@@ -620,7 +804,6 @@ class QuestDisplay {
           this.hideQuestionModal();
         }
         else if (result === "yes") {
-          // Hide Quest!
           this.logic.removeQuest(questId, bonus)
           this.removeQuest(questId, bonus)
           this.hideQuestionModal();
@@ -706,6 +889,11 @@ class QuestDisplay {
     }
   }
 
+  removeChildren(element) {
+    while (element.firstChild) {
+      element.removeChild(element.lastChild);
+    }
+  }
   capitalize(string) {
     return string.slice(0,1).toUpperCase() + string.slice(1)
   }
@@ -809,10 +997,10 @@ class QuestLogic {
     }
     this.afterPageLoad();
   }
-  changePoints(delta) {
+  changePoints(delta, skipAnimation) {
     let oldPoints = this.points;
     this.points += delta;
-    this.questDisplay.changePoints(this.points);
+    this.questDisplay.changePoints(this.points, skipAnimation);
     this.serializeData(["points"])
   }
   getCurrentDate() {
@@ -860,9 +1048,29 @@ class QuestLogic {
     this.questPool.buildWeightTable(this.dailyQuests.concat(this.excludedQuests), this.excludedCategories, {base: 10})
   }
 
+  setBirthday(date, name) {
+    this.birthdays[date] = name;
+    this.serializeData(["birthdays"])
+  }
+  removeBirthday(date) {
+    delete this.birthdays[date];
+    this.serializeData(["birthdays"])
+  }
+
   setNumberOfQuests(number) {
     this.settings.numberOfQuests = number;
     this.serializeData(["settings"])
+  }
+
+  unhide(type, id) {
+    if (type === "category") {
+      this.excludedCategories.splice(this.excludedCategories.findIndex(catId=>catId===id), 1)
+      this.serializeData(["excludedCategories"])
+    }
+    else if (type === "quest") {
+      this.excludedQuests.splice(this.excludedQuests.findIndex(questId=>questId===id), 1)
+      this.serializeData(["excludedQuests"])
+    }
   }
 
   addQuestWithId(questId) {
@@ -883,10 +1091,13 @@ class QuestLogic {
         ]
       }).then((choice)=>{
         if (choice === "yes") {
-          this.changePoints(-1 * themeCost);
+          let pointsOld = this.points;
+          this.changePoints(-1 * themeCost, true);
+          this.questDisplay.animateNumber(document.getElementById("pointsDedicated"), pointsOld, this.points)
           this.unlockedThemes.push(theme);
           this.questDisplay.changeActiveTheme(theme, lightOrDark);
           this.questDisplay.ownTheme(theme);
+
           this.serializeData(["unlockedThemes"])
         }
         this.questDisplay.hideQuestionModal();
@@ -955,7 +1166,7 @@ class QuestLogic {
     this.serializeData(["recurringQuests", "excludedParents"])
   }
   continueDay() {
-    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
+    this.deserializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode", "birthdays"])
     this.questDisplay.initializeSettings(this.settings)
     this.disabledForToday = this.excludedQuests.concat(this.dailyQuests, this.excludedParents)
     this.questPool = new QuestPool(quests);
@@ -964,8 +1175,8 @@ class QuestLogic {
     this.bonusQuests.forEach(quest=>this.questDisplay.addQuest(quest, true))
   }
   checkBonusTasks(date) {
-    if (demoBirthdays[date] && !this.excludedQuests.includes("birthday")) {
-      let birthdayName = demoBirthdays[date];
+    if (this.birthdays[date] && !this.excludedQuests.includes("birthday")) {
+      let birthdayName = this.birthdays[date];
       let quest = {
         id: "birthday",
         title: `${birthdayName}'s birthday!`,
@@ -987,7 +1198,7 @@ class QuestLogic {
     let now = new Date();
     let date = `${String(now.getMonth()+1).padStart(2, 0)}/${String(now.getDate()).padStart(2, 0)}`;
     console.log(date)
-    this.deserializeData(["excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
+    this.deserializeData(["excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode", "birthdays"])
     this.questDisplay.initializeSettings(this.settings)
     this.checkBonusTasks(date);
     this.disabledForToday = this.excludedQuests.concat(this.excludedParents);
@@ -1043,7 +1254,7 @@ class QuestLogic {
   firstDataGeneration() {
     // The first time the app is launched
     this.points = 0;
-    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode"])
+    this.serializeData(["dailyQuests", "bonusQuests", "excludedQuests", "excludedCategories", "points", "recurringQuests", "excludedParents", "settings", "theme", "unlockedThemes", "themeMode", "birthdays"])
     localStorage.dataPresent = true;
     this.newDay(true)
   }

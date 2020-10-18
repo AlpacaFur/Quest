@@ -164,14 +164,19 @@ body {
 }
 .light {
 	--background: white;
+  --background-alt: #bbb;
 	--grey: #888;
+  --strong-grey: #666;
 	--text: black;
 }
 .dark {
 	--background: #222;
-	--grey: #888;
+  --background-alt: #666;
+	--grey: #999;
+  --strong-grey: #bbb;
 	--text: white;
 }
+
 .theme-pair {
 	display: flex;
   margin-bottom: 2px;
@@ -179,6 +184,10 @@ body {
     padding: 0px;
     background-color: transparent;
     border-radius: 12px;
+    transition: background-color 0.25s ease;
+    &:active {
+      background-color: var(--grey);
+    }
     &.active {
       background: linear-gradient(-45deg, var(--grad2), var(--grad1));
     }
@@ -190,6 +199,8 @@ body {
 .themes {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .theme-group {
 	display: inline-flex;
@@ -297,7 +308,7 @@ body {
   // height: 100vh;
   width: 100vw;
   transition: transform 0.25s ease;
-  background-color: white;
+  background-color: var(--background);
   z-index: 1;
   margin: 0px -10px;
   box-sizing: border-box;
@@ -328,7 +339,7 @@ body {
     margin: 0px;
     margin-top: -9px;
     font-size: 21px;
-    color: #666;
+    color: var(--grey);
   }
   #infoPaneText {
     font-size: 21px;
@@ -346,7 +357,7 @@ body {
       padding: 8px 18px 8px 10px;
       align-items: center;
       text-decoration: none;
-      color: #333;
+      color: var(--strong-grey);
       svg {
         width:35px;
         height: 35px;
@@ -371,6 +382,171 @@ body {
     }
 
   }
+}
+
+#sidebarBackground {
+  height: 100vh;
+  width: 100vw;
+  padding: 10px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  z-index: 1;
+  transition: background-color 0.25s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  &.visible {
+    background-color: #00000077;
+    pointer-events: all;
+  }
+  &.visible>#sidebar {
+    transform: translateX(0vh);
+  }
+  &.birthday .birthdayContent {
+    display: block;
+  }
+}
+#sidebar {
+  position: absolute;
+  right: 0px;
+  transform: translateX(105%);
+  max-height: 90vh;
+  width: 95vw;
+  transition: transform 0.25s ease;
+  overflow: hidden;
+  background-color: var(--background);
+  z-index: 1;
+  margin: 0px -10px;
+  box-sizing: border-box;
+  padding: 15px 25px 20px 20px;
+  border-radius: 20px 0px 0px 20px;
+  user-select: none;
+  -webkit-user-select: none;
+  input[type=text] {
+  	border: 2px solid var(--grey);
+  	border-radius: 3px;
+  	background-color: transparent;
+    padding: 2px 6px;
+  	font-size: 18px;
+  	color: var(--text);
+  	font-weight: bold;
+  	outline: none;
+  	&:focus {
+  		border-color: var(--grad1);
+  	}
+  }
+  .select-cont {
+    display: inline-block;
+    margin-top: 8px;
+    margin-right: 5px;
+    position: relative;
+    &:after {
+      content: "▼";
+      font-size: 12px;
+      color: --var(text);
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+  }
+  select {
+  	background-color: var(--background);
+  	border: 2px solid var(--grey);
+    padding: 2px 20px 2px 10px;
+  	color: var(--text);
+    font-size: 18px;
+    text-align: center;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  	&:focus {
+  		border-color: var(--grad1);
+  	}
+  	option {
+  		background-color: var(--background);
+  	}
+  }
+
+  .birthdayContent {
+    display: none;
+  }
+  #closeSidebar {
+    display: flex;
+    align-items: center;
+    svg {
+      fill: #999;
+      width: 22px;
+      height: 22px;
+    }
+    p {
+      margin: 0;
+      color: #999;
+      font-size: 25px;
+      font-weight: bold;
+      margin-left: 12px;
+    }
+  }
+  #add-button {
+    font-size: 22px;
+    font-weight: bold;
+    border: 2px solid var(--grad1);
+    border-radius: 6px;
+    padding: 0px 20px;
+    color: var(--grad1);
+    display: inline-block;
+    margin: 10px 0px 0px 0px;
+    &:active {
+      color: white;
+      background-color: var(--grad1);
+    }
+  }
+  #sidebarContent {
+    overflow: auto;
+    max-height: 200px;
+    // max-height: 300px;
+    // display: flex;
+    // flex-direction: column;
+  }
+  h2 {
+    margin: 10px 0px;
+  }
+  .message {
+    display: none;
+    margin: 0px;
+    font-size: 18px;
+    color: var(--strong-grey)
+  }
+  h2+.message, .message:first-child {
+    display: block;
+  }
+  .button-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    >p {
+      font-size: 22px;
+      margin: 0;
+      margin-right: 10px;
+    }
+    p:last-child {
+      font-size: 20px;
+      font-weight: bold;
+      border: 2px solid var(--grad1);
+      border-radius: 6px;
+      padding: 0px 5px;
+      color: var(--grad1);
+      &:active {
+        color: white;
+        background-color: var(--grad1);
+      }
+    }
+  }
+
 }
 
 #questPane, #pointsPane, #settingsPane {
@@ -440,6 +616,7 @@ body {
 #settingsPane {
   >div {
     padding-left: 20px;
+    width: calc(100vw - 40px)
   }
   h1 {
     margin-left: -20px;
@@ -461,12 +638,15 @@ body {
 	align-items: center;
 	cursor: pointer;
 	user-select: none;
+  -webkit-user-select: none;
 	border: 2px solid black;
   margin-top: 10px;
+  transition: background-color 0.25s ease;
 	svg {
 		width: 25px;
 		height: 25px;
 		fill: black;
+    transition: fill 0.25s ease;
 	}
 	p {
 		font-weight: bold;
@@ -474,15 +654,25 @@ body {
 		font-size: 22px;
 		margin-left: 4px;
 		margin-right: 4px;
+    transition: color 0.25s ease;
 	}
-	&.green {
-		border: 2px solid #00A62B;
+	&.accent {
+		border: 2px solid var(--grad1);
 		svg {
-			fill: #00A62B;
+			fill: var(--grad1);
 		}
 		p {
-			color: #00A62B;
+			color: var(--grad1);
 		}
+    &:active {
+      background-color: var(--grad1);
+      p {
+        color: white;
+      }
+      svg {
+        fill: white;
+      }
+    }
 	}
 	&.red {
 		border: 2px solid #A60000;
@@ -492,11 +682,21 @@ body {
 		p {
 			color: #A60000;
 		}
+    &:active {
+      background-color: #A60000;
+      p {
+        color: white;
+      }
+      svg {
+        fill: white;
+      }
+    }
 	}
 }
 
 .circles {
 	display: flex;
+  -webkit-user-select: none;
 	div {
 		width: 45px;
 		height: 45px;
@@ -504,8 +704,8 @@ body {
 		cursor: pointer;
 		font-weight: bold;
 		font-size: 32px;
-		border: 2px solid #666;
-		color: #666;
+		border: 2px solid var(--grey);
+		color: var(--grey);
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -527,7 +727,7 @@ body {
   align-items: center;
   justify-content: center;
   // box-shadow: 0px 0px 10px -3px #000;
-  border-top: 1px solid #bbb;
+  border-top: 1px solid var(--background-alt);
   // margin: 0 -10px -10px -10px;
   div {
     flex: 1;
@@ -536,13 +736,16 @@ body {
     align-items: center;
     height: 100%;
     &.active>svg {
-      fill: #4d4d4d;
+      // fill: #4d4d4d;
+      fill: var(--strong-grey);
     }
   }
   svg {
     width: 38px;
     height: 40px;
-    stroke: #4d4d4d;
+    // stroke: #4d4d4d;
+    stroke: var(--strong-grey);
+
     fill: transparent;
     transition: fill 0.25s ease;
   }
@@ -574,12 +777,14 @@ body {
 .modal {
 	border-radius: 12px;
 	overflow: hidden;
-	background-color: #fff;
+	background-color: var(--background);
 	width: 240px;
 	font-size: 20px;
+  user-select: none;
+  -webkit-user-select: none;
 	>div {
 		padding: 12px 12px;
-		border-bottom: 2px solid #888;
+		border-bottom: 2px solid var(--grey);
 		display: flex;
 		align-items: center;
 		cursor: pointer;
@@ -591,10 +796,10 @@ body {
 		p {
 			margin: 0;
 			flex: 1;
-			color: #4d4d4d;
+			color: var(--strong-grey);
 		}
 		svg {
-			fill: #4d4d4d;
+			fill: var(--strong-grey);
 			height: 23px;
 			width: 23px;
 			// justify-self: right;
@@ -602,8 +807,7 @@ body {
 		}
 	}
 	.complete {
-		// background: linear-gradient(-45deg, #00805F, #00BF07);
-			background: linear-gradient(-45deg, #00805F, #00BF07, #333, #333);
+		background: linear-gradient(-45deg, var(--grad2), var(--grad1), var(--grey), var(--grey));
 		background-size: 320% 320%;
 		transition: background-position 0.25s ease;
 		border: none;
@@ -655,7 +859,7 @@ body {
 	max-width: 400px;
 	height: 80px;
 	background-color: transparent;
-	border: 2.5px solid #666;
+	border: 2.5px solid var(--strong-grey);
 	border-radius: 15px;
 	box-sizing: border-box;
 	background: linear-gradient(-45deg, var(--grad2), var(--grad1), var(--background), var(--background));
@@ -691,14 +895,14 @@ body {
 			width: 27px;
 			height: 27px;
 			fill: transparent;
-			stroke: #666;
+			stroke: var(--strong-grey);
 			opacity: 1;
 		}
 	}
 	.text {
 		flex: 1;
 		p {
-			color: #666;
+			color: var(--strong-grey);
 			transition: color 0.5s ease;
 		}
 		p:first-child {
@@ -723,7 +927,7 @@ body {
 		p {
 			font-weight: bold;
 			font-size: 24px;
-			color: #666;
+			color: var(--strong-grey);
 			margin-top: 0px;
 			margin-bottom: 0px;
 			transition: color 0.5s ease;
@@ -732,7 +936,7 @@ body {
 		svg {
 			width: 20px;
 			height: 20px;
-			fill: #666;
+			fill: var(--strong-grey);
 			transition: fill 0.5s ease;
 		}
 	}
