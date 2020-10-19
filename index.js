@@ -101,10 +101,10 @@ const quests = {
       {
         title: "I'm social distancing",
         action: "remove-category",
-        category: "social"
+        category: "People Proximity"
       }
     ],
-    categories: ["social"]
+    categories: ["social", "People Proximity"]
   },
   "start-book": {
     id: "start-book",
@@ -140,24 +140,24 @@ const quests = {
   },
   "take-walk": {
     id: "take-walk",
-    title: "Go on a Walk",
+    title: "Take a Walk",
     points: 10,
     summary: "Go on a walk, whether nearby or farther away!",
-    categories: ["physical"],
+    categories: ["exercise"],
     hide: [
       {
         title: "I have limited mobility",
         action: "remove-category",
-        category: "physical"
+        category: "exercise"
       }
     ]
   },
   "take-hike": {
     id: "take-hike",
-    title: "Go on a Hike",
+    title: "Take a Hike",
     points: 25,
     summary: "Go on a hike, whether nearby or farther away!",
-    categories: ["physical"],
+    categories: ["exercise"],
     hide: [
       {
         title: "There aren't any hiking locations nearby",
@@ -167,20 +167,29 @@ const quests = {
       {
         title: "I have limited mobility",
         action: "remove-category",
-        category: "physical"
+        category: "exercise"
       }
     ]
+  },
+  "cook-meal": {
+    id: "cook-meal",
+    title: "Cook a Healthy Meal",
+    points: 25,
+    summary: "Cook a meal that's good for you!",
+    categories: ["health"]
+  },
+  "reach-out": {
+    id: "reach-out",
+    title: "Reach out to a Friend",
+    points: 25,
+    summary: "Reach out to a friend that you haven't talked to in a while. Send them a text, give them a call, or send them an email.",
+    categories: ["social"]
   },
   "birthday": {
     title: "Birthday",
     bonus: true,
     categories: ["bonus"]
   }
-}
-
-const demoBirthdays = {
-  "10/10": "Test Person",
-  "10/12": "Joe"
 }
 
 const bonusEvents = {
@@ -196,7 +205,7 @@ const bonusEvents = {
     },
     categories: ["event"]
   },
-  "10/12": {
+  "10/18": {
     id: "register-to-vote",
     title: "Register to Vote!",
     summary: "Make sure you're registered to vote in this year's election! Request a mail-in ballot if you plan to vote by mail.",
@@ -214,9 +223,9 @@ const bonusEvents = {
 
 const THEMES = [
   {name: "default"},
-  {name: "sapphire", points: 50},
-  {name: "amethyst", points: 100},
-  {name: "topaz", points: 200},
+  {name: "sapphire", points: 100},
+  {name: "amethyst", points: 200},
+  {name: "topaz", points: 400},
 ]
 
 // difficulty -> relaxed, normal, challenge
@@ -336,6 +345,11 @@ class QuestDisplay {
     let paneBackground = document.getElementById("infoPaneBackground")
     paneBackground.addEventListener("click", (e)=>{
       if (e.target === paneBackground) this.hideInfoModal();
+    })
+
+    let modalBackground = document.getElementById("modal-background")
+    modalBackground.addEventListener("click", (e)=>{
+      if (e.target === modalBackground) this.closeModal();
     })
 
     this.currentPane = -1;
@@ -515,7 +529,6 @@ class QuestDisplay {
           let scrollPercent = Math.pow(1 - framesLeft/totalFrames, 0.07*framesLeft)
           elem.scrollLeft = from + diff*scrollPercent;
           framesLeft--;
-          // console.log(scrollPercent)
       }, Math.round(1000/fps))
   }
 
@@ -523,7 +536,6 @@ class QuestDisplay {
     let name = document.getElementById("birthday-name").value
     if (name === "") return;
     let monthElem = document.getElementById("birthday-month");
-    console.log(monthElem)
     let month = monthElem.options[monthElem.selectedIndex].value
     let dayElem = document.getElementById("birthday-day");
     let day = dayElem.options[dayElem.selectedIndex].value
@@ -710,7 +722,6 @@ class QuestDisplay {
     }
     if (quest.resources) {
       let frag = document.createDocumentFragment();
-      console.log(quest.resources)
       quest.resources.forEach((resource)=>{
         let cont = document.createElement("a");
         cont.setAttribute("href", resource.url)
@@ -737,10 +748,11 @@ class QuestDisplay {
   }
 
   parseCustomHideChoice(questId, bonus, option) {
+    console.log(option)
     let quest = this.logic.getQuest(questId, bonus)
     if (option.action === "remove-category") {
       this.showQuestionModal({
-        title: `Would you like to hide ${quest.categories[0]} quests?`,
+        title: `Would you like to hide ${option.category} quests?`,
         choices: [
           {id:"yes", text: "Yes", class:"danger"},
           {id:"no", text: "No, only hide this quest", class:"danger"},
@@ -750,7 +762,7 @@ class QuestDisplay {
         if (choice === "yes") {
           this.logic.removeQuest(questId, bonus)
           this.removeQuest(questId, bonus)
-          this.logic.hideCategory(quest.categories[0])
+          this.logic.hideCategory(option.category)
           this.hideQuestionModal();
         }
         else if (choice === "no") {
@@ -1074,9 +1086,6 @@ class QuestLogic {
   }
   updateWeightTable() {
     let dailyQuestIds = this.dailyQuests.map(quest=>quest.id)
-    console.log(dailyQuestIds)
-    console.log(this.excludedQuests)
-    console.log(dailyQuestIds.concat(this.excludedQuests))
     this.questPool.buildWeightTable(dailyQuestIds.concat(this.excludedQuests), this.excludedCategories, {base: 10})
   }
 
@@ -1283,7 +1292,6 @@ class QuestLogic {
   }
   deserializeData(categories) {
     categories.forEach((category)=>{
-      console.log(category)
       this[category] = JSON.parse(localStorage[category]);
     })
   }
